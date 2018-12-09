@@ -1,0 +1,150 @@
+---
+title: "Data Sources"
+author: "Andy Krause"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+This document provides information on the sources of data -- both currently used and those with potential for the future -- used in the Baseball30x30 package. 
+
+Get data
+
+## Git-based resources
+
+### Chadwick
+
+**Retrosheet** repository
+
+https://github.com/chadwickbureau/retrosheet
+
+**BaseballDataBank** repository
+
+https://github.com/chadwickbureau/baseballdatabank
+
+### Other
+
+**Analyzing Baseball with R companion** repository
+https://github.com/maxtoki/baseball_R
+
+## R Packages
+
+https://github.com/rmscriven/retrosheet
+* `devtools::install_github("rmscriven/retrosheet")`
+
+https://github.com/beanumber/openWAR
+* `devtools::install_github("omegahat/Sxslt")`
+* `devtools::install_github("beanumber/openWAR")`
+
+https://github.com/BillPetti/baseballr
+* R package: `devtools::install_github("BillPetti/baseballr")`
+
+https://pitchrx.cpsievert.me/
+* R package: `devtools::install_github("cpsievert/pitchRx")`
+
+
+## Manual Downloads
+
+### Basic Stats
+
+#### Current
+* https://www.baseball-reference.com/data/
+* Baseball Reference: https://www.baseball-reference.com/leagues/MLB/2018.shtml
+* Rotowire: https://www.rotowire.com/baseball/stats.php
+  
+#### Historical
+
+* Lahman: http://www.seanlahman.com/baseball-archive/statistics/ 
+  
+### Projections
+
+* Fantasy Pros: https://www.fantasypros.com/mlb/rankings/ros-overall.php
+
+### Advanced Stats  
+
+  * Rotowire (Subscription) https://www.rotowire.com/baseball/stats-advanced.php
+  
+  * Baseball Prospectus (DRA Run Values). https://legacy.baseballprospectus.com/sortable/extras/dra_runs.php
+
+### Game, Play or Pitch (Sub-Season)
+  
+* Retrosheet (Play-by-play) https://www.retrosheet.org/game.htm
+
+* Brooks Basebaall (PitchFX data).  https://www.brooksbaseball.net
+
+## Informational Resources
+
+* https://www.fangraphs.com/library/pitchfx-resources/
+
+* https://baseballwithr.wordpress.com/2017/04/12/wheres-the-data/comment-page-1/
+
+* https://geeksided.com/2014/05/24/find-advanced-baseball-stats-analytics-online/
+
+
+## In the package
+
+These are the files in the `/data` directory. 
+
+### Raw
+
+Under `/raw`:
+
+#### Projections
+
+Under `/projections`
+
+| Name | Type | Source | Description |
+| :-----: | :-----: | :-----: | :-----: |
+| `fp_hitters_2014.csv` | Projections | FantasyPros | Hitter Pre-Season Projections |
+| `fp_hitters_2015.csv` | Projections | FantasyPros | Hitter Pre-Season Projections |
+| `fp_hitters_2016.csv` | Projections | FantasyPros | Hitter Pre-Season Projections |
+| `fp_hitters_2017.csv` | Projections | FantasyPros | Hitter Pre-Season Projections |
+| `fp_hitters_2018.csv` | Projections | FantasyPros | Hitter Pre-Season Projections |
+| `fp_pitchers_2014.csv` | Projections | FantasyPros | Pitcher Pre-Season Projections |
+| `fp_pitchers_2015.csv` | Projections | FantasyPros | Pitcher Pre-Season Projections |
+| `fp_pitchers_2016.csv` | Projections | FantasyPros | Pitcher Pre-Season Projections |
+| `fp_pitchers_2017.csv` | Projections | FantasyPros | Pitcher Pre-Season Projections |
+| `fp_pitchers_2018.csv` | Projections | FantasyPros | Pitcher Pre-Season Projections |
+
+#### Rankings
+
+Under `/rankings`
+
+| Name | Type | Source | Description |
+| :-----: | :-----: | :-----: | :-----: |
+| `fp_draftrankings_2016.csv` | Draft Rankings | FantasyPros | Pre-Season Draft Position Rankings |
+| `fp_draftrankings_2017.csv` | Draft Rankings | FantasyPros | Pre-Season Draft Position Rankings |
+| `fp_draftrankings_2018.csv` | Draft Rankings | FantasyPros | Pre-Season Draft Position Rankings |
+
+#### Players
+
+Under `/players`
+
+| Name | Type | Source | Description |
+| :-----: | :-----: | :-----: | :-----: |
+| `people.csv` | Player | Lahman (via BaseballDataBank) | Player names, codes and information |
+| `teams.csv` | Team | Lahman (via BaseballDataBank) | Team names, stadiums and information |
+
+#### Stats
+
+Under `/stats`
+
+| Name | Type | Source | Time Period | Description |
+| :-----: | :-----: | :-----: | :-----: | :-----: |
+| `hitting.csv` | Stats | Lahman (via BaseballDataBank) | 1871 - 2017 | Regular Season Hitting Statistics |
+| `pitching.csv` | Stats | Lahman (via BaseballDataBank) | 1871 - 2017 | Regular Season Pitching Statistics |
+| `fielding.csv` | Stats | Lahman (via BaseballDataBank) | 1871 - 2017 | Regular Season Fielding Statistics |
+| `fieldingOF.csv` | Stats | Lahman (via BaseballDataBank) | 1871 - 2017 | Regular Season Fielding Statistics for Outfielders |
+| `br_batting_2018.csv` | Stats | Baseball Reference | 2018 | Regular Season Batting | 
+| `br_battingADV_2018.csv` | Stats | Baseball Reference | 2018 | Regular Season Advanced Batting | 
+| `br_pitching_2018.csv` | Stats | Baseball Reference | 2018 | Regular Season Pitching | 
+| `br_fielding_2018.csv` | Stats | Baseball Reference | 2018 | Regular Season Fielding | 
+| `br_appearances_2018.csv` | Stats | Baseball Reference | 2018 | Regular Season Appearances by Position | 
+| `br_batting_2017.csv` | Stats | Baseball Reference | 2017 | Regular Season Batting | 
+| `br_battingADV_2017.csv` | Stats | Baseball Reference | 2017 | Regular Season Advanced Batting | 
+| `br_pitching_2017.csv` | Stats | Baseball Reference | 2017 | Regular Season Pitching | 
+| `br_fielding_2017.csv` | Stats | Baseball Reference | 2017 | Regular Season Fielding | 
+| `br_appearances_2017.csv` | Stats | Baseball Reference | 2017 | Regular Season Appearances by Position | 
+| `roto_batting_2018.csv` | Stats | Rotowire | 2018 | Regular Season Hitting | 
+| `roro_pitching_2018.csv` | Stats | Rotowire | 2018 | Regular Season Pitching | 
+
+
