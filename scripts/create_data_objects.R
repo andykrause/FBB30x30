@@ -332,17 +332,6 @@
     
     
     # 
-    # 
-    # C:\Code\sportsQuant\retrosheet\gamelog
-    # gg <- read.csv(file.path('c:/code/sportsQuant/retrosheet/gamelog/GL2018.txt'))
-    # 
-    # 
-    # k <- 'https://www.retrosheet.org/boxesetc/2018/B08170ATL2018.htm'
-    # library(XML) 
-    # url = 'http://www.baseball-reference.com/players/a/'
-    # doc <- htmlParse(k) 
-    # webpage <- xml2::read_html(k) %>%
-    # rvest::html_text(
-    # 
+
     
     
