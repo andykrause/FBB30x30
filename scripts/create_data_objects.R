@@ -6,6 +6,7 @@
 
   library(readr)
   library(tidyverse)
+  library(FBB30x30)
 
 ### People and Teams ---------------------------------------------------------------------
   
@@ -325,13 +326,44 @@
   
 ### Seasons ------------------------------------------------------------------------------
   
+  ## Read in Data  
+  season2018_df <- read.csv(file.path(getwd(), 'data', 'raw', 'seasons', 'season2018.csv'))
+  season2017_df <- read.csv(file.path(getwd(), 'data', 'raw', 'seasons', 'season2017.csv'))
+  season2016_df <- read.csv(file.path(getwd(), 'data', 'raw', 'seasons', 'season2016.csv'))
+  season2015_df <- read.csv(file.path(getwd(), 'data', 'raw', 'seasons', 'season2015.csv'))
   
-    
-    
-    
-    
-    
-    # 
-
-    
-    
+  # 2015
+  season2015_df <- season2015_df %>%
+    dplyr::mutate(Team = c(2, 3, 1, 5, 6, 4)) %>%
+    dplyr::select(team = Team, rank = Rank, r = R, hr = HR, rbi = RBI, so = K, hbp = HBP,
+                  sbn = SBN, obp = OBP, slg = SLG, e = E, qs = QS, k = K.1, oba = OBA,
+                  whip = WHIP, ptw = PTW, svhd = SVHD, moves = Moves)
+  
+  # 2016
+  season2016_df <- season2016_df %>%
+    dplyr::mutate(Team = c(7, 1, 2, 4, 5, 8)) %>%
+    dplyr::select(team = Team, rank = Rank, r = R, hr = HR, rbi = RBI, so = K, sbn = SBN, 
+                  obp = OBP, slg = SLG, gidp = GIDP, ppa = PPA, fpct = FPCT, ip = IP, 
+                  qs = QS, k = K.1, hb = HB, sv = SV, hd = HD, whip = WHIP, moves = Moves)
+  
+  # 2017
+  season2017_df <- season2017_df %>%
+    dplyr::mutate(Team = c(2, 9, 8, 3, 11, 1, 10)) %>%
+    dplyr::select(team = Team, rank = Rank, r = R, hr = HR, rbi = RBI, so = K, sbn = SBN, 
+                  obp = OBP, slg = SLG, gidp = GIDP, e = E, ip = IP, qs = QS, k = K.1, 
+                  sv = SV, hd = HD, whip = WHIP, moves = Moves, starts = Starts)
+  
+  # 2018
+  season2018_df <- season2018_df %>%
+    dplyr::mutate(Team = c(8, 1, 12, 3, 4, 10, 2, 9)) %>%
+    dplyr::select(team = Team, rank = Rank, r = R, hr = HR, rbi = RBI, so = K, sb = SB, 
+                  obp = OBP, slg = SLG, gidp = GIDP, e = E, ip = IP, qs = QS, k = K.1, 
+                  sv = SV, hd = HD, whip = WHIP, moves = Moves, starts = Starts)
+  
+  seasons_ <- list(`2015` = season2015_df,
+                   `2016` = season2016_df,
+                   `2017` = season2017_df,
+                   `2018` = season2018_df)
+  
+  usethis::use_data(seasons_, overwrite=TRUE) 
+  
