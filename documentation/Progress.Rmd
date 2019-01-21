@@ -1,0 +1,66 @@
+---
+title: "Progress"
+author: "Andy Krause"
+date: "1/21/2019"
+output: html_document
+---
+
+## TO DOS
+
+1. Get Hold and QS Data (get from BR.  Make list of all available tables.)
+2. Build process to create projections for:
+    * Errors
+    * GIDP
+    * Holds
+    * Quality Starts
+3. Outline system for updating to 2019 data
+4. Compute statistics marginal values (DONE: See `Season Analysis.R`)
+4. Build a mock draft system
+5. 
+
+
+## Data
+
+The following data objects have been created.  The notes below each indicate what, if anything, still needs to be done on each.
+
+Data is created with the `create_data_objects.R` script. 
+
+| Type | Name | Source | Desc | Remaining |
+| :----- | :----- | :--------- | :--------------------------------- | :-------------------------- |
+| TP | `teams_df` | Lahman | Team identification codes across all data bases | DONE |
+| TP | `players_df` | Lahman | Player IDS, names and played periods (2014-2018) | DONE | 
+| Stats | `fielding_ndf` | Lahman | Fielding statistics (2014-2018) | DONE |
+| Stats | `batting_ndf` | Lahman | Batting statistics (2014-2018) | DONE |
+| Stats | `pitching_ndf` | Lahman | Pitching statistics (2014-2018) | **Needs Holds and QS** |
+| PR | `batprojs_df` | FantasyPros | Projected Batting Stats (2014-2018) | **Needs Errors and GIDP** |
+| PR | `pitchprojs_df` | FantasyPros | Projected Pitching Stats (2014-2018) | **Needs Holds and QS** |
+| PR | `rankings_df` | FantasyPros | Player draft rankings in standard formats (2016-2018) | DONE |
+
+### Imputation functions
+
+## Functions
+
+
+
+## Draft System
+
+
+
+https://www.reddit.com/r/fantasybaseball/comments/5tpqna/quality_start_projection_equation/
+
+
+https://www.baseballhq.com/forecasters-toolbox-pitchers
+
+Holds and QS for leaders:
+https://www.teamrankings.com/mlb/player-stat/quality-starts
+
+All, but only 2018:
+https://www.foxsports.com/mlb/stats?season=2016&category=PITCHING+RELIEF&group=1&sort=7&time=0&pos=0&qual=1&sortOrder=0&splitType=128&page=2&statID=0
+
+Quality starts all the way back, but no holds:
+http://www.espn.com/mlb/stats/pitching/_/year/2014/type/expanded/order/false
+
+
+Has everything, though difficult format
+https://www.baseball-reference.com/leagues/MLB/2018-starter-pitching.shtml
+

@@ -4,7 +4,8 @@
 \name{pitchprojs_df}
 \alias{pitchprojs_df}
 \title{Pitching Projections}
-\format{A \code{"pitchingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 4,069 rows and 17 variables
+\format{A \code{"pitchingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
+4,069 rows and 17 variables
 \describe{
   \item{player}{Standard player name [fct]}
   \item{year}{Year of data [int]}

@@ -4,7 +4,8 @@
 \name{fielding_ndf}
 \alias{fielding_ndf}
 \title{Basic fielding statistics}
-\format{A \code{"fielding", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 7,749 rows and 3 (4) variables
+\format{A \code{"fielding", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 
+7,749 rows and 3 (4) variables
 \describe{
   \item{player_id}{The unique Lahman player ID [fct]}
   \item{year}{Year of data [int]}

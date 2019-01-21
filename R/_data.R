@@ -4,6 +4,67 @@
 #
 #*****************************************************************************************
 
+### Data Sources -------------------------------------------------------------------------
+
+#' 
+#' Baseball Reference tables and codes
+#' 
+#' Types of data from Baseball-reference.com (not complete)
+#' 
+#' @docType data
+#' @usage data(baseballref_df)
+#' @source Author compiled
+#' @format A \code{'tbl_df', 'tbl', "data.frame"} with 17 rows and 2 columns
+#'  \describe{
+#'   \item{data}{Type of data [chr]}
+#'   \item{link_or_code}{html link or codes for functions [chr]}
+#' }
+'baseballref_df'
+
+### Players and Teams --------------------------------------------------------------------
+
+#' 
+#' Team Identifier Codes
+#' 
+#' Team codes from various sources
+#' 
+#' @docType data
+#' @usage data(teams_df)
+#' @source Author compiled
+#' @format A \code{"seasons", 'tbl_df', 'tbl', "data.frame"} with 30 rows and 6 columns
+#'  \describe{
+#'   \item{fp_id}{Fantasy Pros team id [chr]}
+#'   \item{br_id}{Baseball reference team id [chr]}
+#'   \item{lahman_id}{Lahman team id [chr]}
+#'   \item{retro_id}{Retro sheet standard Pros team id [chr]}
+#'   \item{espn_id}{ESPN team id [chr]}
+#'   \item{retrosheet_id}{Retro sheet data scraping team id [chr]}
+#' }
+'teams_df'
+
+#' 
+#' Player Information
+#' 
+#' Unique IDs, player names and last game information
+#' 
+#' @docType data
+#' @usage data(players_df)
+#' @source Lathman (see create_data_objects.R scripts)
+#' @format A \code{"players", 'tbl_df', 'tbl', "data.frame"} with 2444 rows and 8 columns
+#'  \describe{
+#'   \item{player_id}{Lahman id [chr]}
+#'   \item{retro_id}{Retrosheet id [chr]}
+#'   \item{bbref_id}{Baseball reference id [chr]}
+#'   \item{first}{First name [chr]}
+#'   \item{last}{Last name [chr]}
+#'   \item{given}{Given name [chr]}
+#'   \item{last_game}{Last game played in [date]}
+#'   \item{full}{Full name [chr]}
+#' }
+'players_df'
+
+### Statistics ---------------------------------------------------------------------------
+
 #' Basic fielding statistics
 #' 
 #' Lahman Database fielding stats: 2014 - 2017
@@ -11,7 +72,8 @@
 #' @docType data
 #' @usage data(fielding_ndf)
 #' @source Lahman baseball database
-#' @format A \code{"fielding", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 7,749 rows and 3 (4) variables
+#' @format A \code{"fielding", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 
+#' 7,749 rows and 3 (4) variables
 #' \describe{
 #'   \item{player_id}{The unique Lahman player ID [fct]}
 #'   \item{year}{Year of data [int]}
@@ -30,7 +92,8 @@
 #' @docType data
 #' @usage data(batting_ndf)
 #' @source Lahman baseball database
-#' @format A \code{"batting", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 5,898 rows and 3 (20) variables
+#' @format A \code{"batting", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 5,898
+#'  rows and 3 (20) variables
 #' \describe{
 #'   \item{player_id}{The unique Lahman player ID [fct]}
 #'   \item{year}{Year of data [int]}
@@ -65,7 +128,8 @@
 #' @docType data
 #' @usage data(pitching_ndf)
 #' @source Lahman baseball database
-#' @format A \code{"pitching", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 2,924 rows and 3 (13) variables
+#' @format A \code{"pitching", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 
+#' 2,924 rows and 3 (13) variables
 #' \describe{
 #'   \item{player_id}{The unique Lahman player ID [fct]}
 #'   \item{year}{Year of data [int]}
@@ -85,6 +149,8 @@
 #'}
 "pitching_ndf"
 
+### Projections and Rankings -------------------------------------------------------------
+
 #' 
 #' Batting Projections
 #' 
@@ -93,7 +159,8 @@
 #' @docType data
 #' @usage data(batprojs_df)
 #' @source Fantasy Pros Website
-#' @format A \code{"battingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 3,479 rows and 18 variables
+#' @format A \code{"battingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
+#' 3,479 rows and 18 variables
 #' \describe{
 #'   \item{player}{Standard player name [fct]}
 #'   \item{year}{Year of data [int]}
@@ -124,7 +191,8 @@
 #' @docType data
 #' @usage data(pitchprojs_df)
 #' @source Fantasy Pros Website
-#' @format A \code{"pitchingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 4,069 rows and 17 variables
+#' @format A \code{"pitchingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
+#' 4,069 rows and 17 variables
 #' \describe{
 #'   \item{player}{Standard player name [fct]}
 #'   \item{year}{Year of data [int]}
@@ -153,7 +221,8 @@
 #' @docType data
 #' @usage data(rankings_df)
 #' @source Fantasy Pros Website
-#' @format A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 1,786 rows and 10 variables
+#' @format A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 1,786 rows 
+#' and 10 variables
 #' \describe{
 #'   \item{player}{Standard player name [chr]}
 #'   \item{team}{Players team (ESPN code) [chr]}
@@ -167,3 +236,42 @@
 #'   \item{adp}{Average draft position (rounded and rank ordered) [dbl]}
 #' }
 "rankings_df"
+
+### Past Seasons -------------------------------------------------------------------------
+
+#' 
+#' Season Results
+#' 
+#' Previous Season Results from 2015 to 2018
+#' 
+#' @docType data
+#' @usage data(seasons_)
+#' @source Author's own Leagues
+#' @format A list with individual \code{"seasons", 'tbl_df', 'tbl', "data.frame"} 
+#' data.frames with varying rows and variables.  Most common variables are:
+#'  \describe{
+#'   \item{manager}{Unique team manager (ESPN) id [int]}
+#'   \item{rank}{Season Ranking [int]}
+#'   \item{r}{Runs accumulated [int]}
+#'   \item{hr}{Home runs accumulated [int]}
+#'   \item{rbi}{RBIs accumulated [int]}
+#'   \item{so}{Strikeouts (batter) accumulated [int]}
+#'   \item{sb}{Stolen bases accumulated [int]}
+#'   \item{obp}{On base percentage accumulated [num]}
+#'   \item{slg}{Slugging percentage accumulated [num]}
+#'   \item{gidp}{Grounded into double plays accumulated [int]}
+#'   \item{e}{Errors accumulated [int]}
+#'   \item{ip}{Innings pitched accumulated [int]}
+#'   \item{qs}{Quality starts accumulated [int]}
+#'   \item{k}{Strikeouts (pitcher) accumulated [int]}
+#'   \item{sv}{Saves accumulated [int]}
+#'   \item{hd}{Holds accumulated [int]}
+#'   \item{whip}{WHIP accumulated [num]}
+#'   \item{moves}{Moves made during the season [int]}
+#'   \item{starts}{Pitchers starts used [int]}
+#' }
+"seasons_"
+
+
+
+

@@ -4,7 +4,8 @@
 \name{rankings_df}
 \alias{rankings_df}
 \title{Draft Rankings}
-\format{A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 1,786 rows and 10 variables
+\format{A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 1,786 rows 
+and 10 variables
 \describe{
   \item{player}{Standard player name [chr]}
   \item{team}{Players team (ESPN code) [chr]}

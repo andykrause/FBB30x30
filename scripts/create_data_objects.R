@@ -8,9 +8,35 @@
   library(tidyverse)
   library(FBB30x30)
 
+### Data Sources -------------------------------------------------------------------------
+  
+  baseballref_df <- data.frame(data = c('Batting - Standard', 'Batting - Ratio',
+                                        'Batting - Value', 'Batting - Pitches',
+                                        'Batting - Win Probability', 'Batting - Advanced', 
+                                        'Batting - Situational', 'Batting - Baserunning', 
+                                        'Fielding - Appearances', 'Fielding - Standard',
+                                        'Pitching - Standard', 'Pitching - Starter',
+                                        'Pitching - Reliever', 'Pitching - Ratio',
+                                        'Pitching - Value', 'Pitching - Pitches', 
+                                        'Pitching - Win Probability'),
+                               code = c('standard-batting', 'ratio-batting', 
+                                        'value-batting', 'pitches-batting', 
+                                        'win_probability-batting', 
+                                        'advanced-batting', 'situational-batting',
+                                        'baserunning-batting', 
+                                        'appearances-fielding', 
+                                        'standard-fielding', 'standard-pitching',
+                                        'starter-pitching', 'reliever-pitching',
+                                        'ratio-pitching', 'value-pitching',
+                                        'pitches-pitching', 
+                                        'win_probability-pitching'),
+                               stringsAsFactors = FALSE) %>%
+    tibble::as.tibble()
+  usethis::use_data(baseballref_df, overwrite=TRUE)
+  
 ### People and Teams ---------------------------------------------------------------------
   
-  ## Read in Data  
+  # Players  
   players_df <- read.csv(file.path(getwd(), 'data', 'raw', 'players', 'people.csv'))
   
   players_df <- players_df %>%
@@ -19,10 +45,21 @@
                   first = nameFirst, last = nameLast, given = nameGiven, 
                   last_game = finalGame) %>%
     dplyr::mutate(full = paste(first, last),
-                  last_game = as.Date(as.character(last_game)))
+                  last_game = as.Date(as.character(last_game)),
+                  player_id = as.character(player_id), 
+                  retro_id = as.character(retro_id), 
+                  bbref_id = as.character(bbref_id), 
+                  first = as.character(first), 
+                  last = as.character(last), 
+                  given = as.character(given))
+  
   class(players_df) <- c('players', class(players_df))
   
-  teams_df <- read.csv(file.path(getwd(), 'data', 'raw', 'players', 'teams.csv'))
+  usethis::use_data(players_df, overwrite=TRUE)
+  
+  # Teams
+  teams_df <- read.csv(file.path(getwd(), 'data', 'raw', 'players', 'teams.csv'),
+                       stringsAsFactors = FALSE)
   
   teams_df <- teams_df %>%
     dplyr::filter(yearID == 2017) %>%
@@ -31,77 +68,61 @@
     dplyr::mutate(espn_id = c('ARI', 'ATL', 'BAL', 'BOS', 'CWS', 'CHC', 'CIN', 'CLE',
                               'COL', 'DET', 'HOU', 'KC', 'LAA', 'LAD', 'MIA', 'MIL',
                               'MIN', 'NYY', 'NYM', 'OAK', 'PHI', 'PIT', 'SD', 'SEA',
-                              'SF', 'STL', 'TB', 'TEX', 'TOR', 'WAS'))
+                              'SF', 'STL', 'TB', 'TEX', 'TOR', 'WAS'),
+                  retrosheet_id = c('ARI N', 'ATL N', 'BAL A', 'BOS A', 'CHI A', 'CHI N',
+                                    'CIN N', 'CLE A', 'COL N', 'DET A', 'HOU A', 'KC  A', 
+                                    'ANA A', 'LA  N', 'MIA N', 'MIL N', 'MIN A', 'NY  A',
+                                    'NY  N', 'OAK A', 'PHI N', 'PIT N', 'SD  N', 'SEA A',
+                                    'SF  N', 'STL N', 'TB  A', 'TEX A', 'TOR A', 'WAS N'))
+  
   class(teams_df) <- c('teams', class(teams_df))
-  
-  
-  usethis::use_data(players_df, overwrite=TRUE)
+
   usethis::use_data(teams_df, overwrite=TRUE)
   
 ### Statistics ---------------------------------------------------------------------------
   
-  ## Read in Data  
-  fielding_df <- read.csv(file.path(getwd(), 'data', 'raw', 'stats', 'fielding.csv'))
+  # Read in Fielding data
+  fielding_df <- purrr::map(.x = 2014:2018,
+                            .f = getBRStats,
+                            type ='fielding') %>%
+    dplyr::bind_rows()
   
-  ## Limit to necessary
-   fielding_df <- fielding_df %>% 
-     dplyr::filter(yearID >= 2014) %>%
-     dplyr::select(player_id = playerID, year = yearID, team = teamID, POS, G, E)
-   names(fielding_df) <- tolower(names(fielding_df))
-   class(fielding_df) <- c('fielding', class(fielding_df))
-   
-  ## Collapse to sum of G, E 
-   fielding_ndf <- fielding_df %>%
-     tidyr::nest(-player_id, -year, .key = 'fielding_stats') %>%
-     tibble::as.tibble()
+   usethis::use_data(fielding_df, overwrite=TRUE)
    
   # Load Data
-   batting_df <- read.csv(file.path(getwd(), 'data', 'raw', 'stats', 'batting.csv'))
+   batting_df <- purrr::map(.x = 2014:2018,
+                            .f = getBRStats,
+                            type ='batting') %>%
+     dplyr::bind_rows()
    
-   # Trim
-   batting_df <- batting_df %>% 
-     dplyr::filter(yearID >= 2014) %>%
-     dplyr::select(player_id = playerID, year = yearID, team = teamID, G, AB, R, HR, RBI, 
-                   SB, SO, GIDP, SH, SF, H, X2B, X3B, IBB, HBP, BB)
-   names(batting_df) <- tolower(names(batting_df))
-   class(batting_df) <- c('batting', class(batting_df))
-   
-   # Add fields
-   batting_ndf <- batting_df %>%
-     dplyr::mutate(slg = calcSLG(.),
-                   pa = calcPA(.),
-                   obp = calcOBP(.)) %>%
-     tidyr::nest(-player_id, -year, .key = 'batting_stats') %>%
-     tibble::as.tibble()
+   usethis::use_data(batting_df, overwrite=TRUE)
    
  ## Pitching stats
    
-   # Load data
-   pitching_df <- read.csv(file.path(getwd(), 'data', 'raw', 'stats', 'pitching.csv'))
+   pitching_df <- purrr::map(.x = 2014:2018,
+                             .f = getBRStats,
+                             type ='pitching') %>%
+     dplyr::bind_rows()
    
-   # Filter and select
-   pitching_df <- pitching_df %>% 
-     dplyr::filter(yearID >= 2014) %>%
-     dplyr::select(player_id = playerID, year = yearID, team = teamID, W, G, GS, IPouts, 
-                   H, ER, BB, SO, IBB, SV)
-   names(pitching_df) <- tolower(names(pitching_df))
+   usethis::use_data(pitching_df, overwrite=TRUE)
    
-   # Summarize and mutate
-   pitching_ndf <- pitching_df %>%
-     dplyr::mutate(ip = round(ipouts / 3, 1),
-                   whip = calcWHIP(.)) %>%
-     dplyr::rename(k = so) %>%
-     dplyr::select(-ipouts) %>%
-     tidyr::nest(-player_id, -year, .key = 'pitching_stats') %>%
-     tibble::as.tibble()
-   class(pitching_df) <- c('pitching', class(pitching_df))
    
-   ## Write data objects
    
-   usethis::use_data(fielding_ndf, overwrite=TRUE)
-   usethis::use_data(batting_ndf, overwrite=TRUE)
-   usethis::use_data(pitching_ndf, overwrite=TRUE)
-  
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
 ### Projections --------------------------------------------------------------------------
 
    ## Load Projection Data
@@ -143,7 +164,9 @@
                     r = runs) %>%
       dplyr::mutate(pos = gsub(',', '/', pos),
                     pos = gsub('/', ' | ', pos),
-                    year = 2014) %>%
+                    year = 2014,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
       dplyr::select(-c(cs, type))
 
     # 2015
@@ -153,7 +176,9 @@
                                     " ", substr(name, 1, str_locate(name, ',') - 1)),
                     pos = gsub(',', '/', pos),
                     pos = gsub('/', ' | ', pos),
-                    year = 2015) %>%
+                    year = 2015,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
       dplyr::rename(so = k, 
                     ops = obps) %>%
       dplyr::select(-c(cs, g, al.nl.., mixed.., name))
@@ -161,20 +186,24 @@
     # 2016
     names(hp_2016) <- tolower(names(hp_2016))
     hp_2016 <- hp_2016 %>%
-      dplyr::mutate(pos = gsub(',', '/', pos),
-                    pos = gsub('/', ' | ', pos),
-                    year = 2016) %>%
       dplyr::rename(avg = ave,
                     h = hits,
                     hr = hrs,
                     player = name,
-                    r = runs)
-
+                    r = runs) %>%
+      dplyr::mutate(pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    year = 2016,
+                    player = as.character(player),
+                    team = as.character(team))
+    
     # 2017
     names(hp_2017) <- tolower(names(hp_2017))
     hp_2017 <- hp_2017 %>%
       fixFPName(.) %>%
-      dplyr::mutate(year = 2017)
+      dplyr::mutate(year = 2017,
+                    player = as.character(player),
+                    team = as.character(team))
     
     # 2018
     names(hp_2018) <- tolower(names(hp_2018))
@@ -182,7 +211,9 @@
       dplyr::rename(pos = positions) %>%
       dplyr::mutate(year = 2018,
                     pos = gsub(',', '/', pos),
-                    pos = gsub('/', ' | ', pos))
+                    pos = gsub('/', ' | ', pos),
+                    player = as.character(player),
+                    team = as.character(team))
 
     # Combine
     batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018) %>%
@@ -200,7 +231,9 @@
                     bb = bbi) %>%
       dplyr::mutate(pos =  gsub(',', '/', pos),
                     pos =  gsub('/', ' | ', pos),
-                    year = 2014) %>%
+                    year = 2014,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
       dplyr::select(-c(hd, hr, type, bs))
                     
     # 2015
@@ -214,24 +247,30 @@
                     pos = ifelse(gsp >= .85, 'SP', pos),
                     pos = gsub(',', '/', pos),
                     pos = gsub('/', ' | ', pos),
-                    year = 2015) %>%
+                    year = 2015,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
       dplyr::select(-c(al.nl.., mixed.., sho, name, gsp))
     
     # 2016
     names(pp_2016) <- tolower(names(pp_2016))
     pp_2016 <- pp_2016 %>%
-      dplyr::mutate(pos = gsub(',', '/', pos),
-                    pos = gsub('/', ' | ', pos),
-                    year = 2016) %>%
       dplyr::rename(player = name,
                     bb = bbi) %>%
+      dplyr::mutate(pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    year = 2016,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
       dplyr::select(-c(hr))
     
     # 2017
     names(pp_2017) <- tolower(names(pp_2017))
     pp_2017 <- pp_2017 %>%
       fixFPName() %>%
-      dplyr::mutate(year = 2017) %>%
+      dplyr::mutate(year = 2017,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
       dplyr::select(-c(hr))
     
     # 2018
@@ -240,7 +279,9 @@
       dplyr::rename(pos = positions) %>%
       dplyr::mutate(pos = gsub(',', '/', pos),
                     pos = gsub('/', ' | ', pos),
-                    year = 2018) %>%
+                    year = 2018,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
       dplyr::select(-c(hr))
     
 
@@ -301,7 +342,8 @@
     dplyr::rename(rank=ranking,
                   std.dev=stdev,
                   avg=average) %>%
-    tibble::as.tibble()
+    tibble::as.tibble() %>%
+    dplyr::select(player, team, pos, tidyselect::everything())
   rank_2017$adp[is.na(rank_2017$adp)] <- ceiling(rank_2017$avg[is.na(rank_2017$adp)])
   
   # 2018
@@ -360,10 +402,14 @@
                   obp = OBP, slg = SLG, gidp = GIDP, e = E, ip = IP, qs = QS, k = K.1, 
                   sv = SV, hd = HD, whip = WHIP, moves = Moves, starts = Starts)
   
-  seasons_ <- list(`2015` = season2015_df,
-                   `2016` = season2016_df,
-                   `2017` = season2017_df,
-                   `2018` = season2018_df)
+  seasons_ <- list(`2015` = structure(season2015_df, 
+                                      class = c('season', class(season2015_df))),
+                   `2016` = structure(season2016_df, 
+                                      class = c('season', class(season2015_df))),
+                   `2017` = structure(season2017_df, 
+                                      class = c('season', class(season2015_df))),
+                   `2018` = structure(season2018_df, 
+                                      class = c('season', class(season2015_df))))
   
   usethis::use_data(seasons_, overwrite=TRUE) 
   

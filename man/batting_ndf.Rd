@@ -4,7 +4,8 @@
 \name{batting_ndf}
 \alias{batting_ndf}
 \title{Basic batting statistics}
-\format{A \code{"batting", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 5,898 rows and 3 (20) variables
+\format{A \code{"batting", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 5,898
+ rows and 3 (20) variables
 \describe{
   \item{player_id}{The unique Lahman player ID [fct]}
   \item{year}{Year of data [int]}

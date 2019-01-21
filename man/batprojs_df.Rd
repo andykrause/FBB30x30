@@ -4,7 +4,8 @@
 \name{batprojs_df}
 \alias{batprojs_df}
 \title{Batting Projections}
-\format{A \code{"battingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 3,479 rows and 18 variables
+\format{A \code{"battingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
+3,479 rows and 18 variables
 \describe{
   \item{player}{Standard player name [fct]}
   \item{year}{Year of data [int]}
