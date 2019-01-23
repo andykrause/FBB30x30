@@ -146,105 +146,53 @@ prepMatchNone <- function(no_row,
   }
 }
 
+extractMarcelProjections <- function(year = 2018){
 
-scrapeBRStats <- function(type, year){
-  
-  types_ok <- c('starter-pitching', 'reliever-pitching')
-  
-  if (!type %in% types_ok) stop('Type must be one of: ', paste(types_ok, collapse = ', '))
-  
+  # Make URL and scrape raw html
   br_url <- paste0('https://www.baseball-reference.com/leagues/MLB/', year, 
-                   '-', type, '.shtml')
-
+                    '-projections.shtml')
   raw_html <- readr::read_lines(br_url)
-  
-  stat_obj <- raw_html[grep('data-append-csv', raw_html)]
-  
-  purrr::map(.x = stat_obj,
-             .f = brToTable) %>%
-    dplyr::bind_rows() %>%
-    dplyr::filter(team_id != 'D"') %>%
-    dplyr::group_by(player_id, stat) %>%
-    dplyr::summarize(value = sum(value))%>%
-    tidyr::spread(key = 'stat', value = 'value')
-    
-}
 
-brToTable <- function(br_obj){
-  
-  br_ <- unlist(strsplit(br_obj, 'td><td'))
-  
-  ## Extract IDs
-  player_id <- brExtractID(br_[1])
-  
-  ## Extract Teams
-  team_id <- substr(br_[3], nchar(br_[3]) - 8, nchar(br_[3]) - 6)
-  
-  ## Extract Stats
-  stats_ <- br_[4:length(br_)]
-  purrr::map(.x = stats_,
-             .f = brExtractStats) %>%
-    dplyr::bind_rows() %>%
-    dplyr::mutate(player_id = player_id,
-                  team_id = team_id)
-}
+  # Limit to table objects
+  proj_obj <- raw_html[grep('data-append-csv', raw_html)]
 
-brExtractStats <- function(stat_v){
-  
-  prefix_end <- stringr::str_locate(stat_v, 'stat=')[, 2]
-  
-  stat_v <- substr(stat_v, prefix_end + 1, nchar(stat_v))
-  
-  stat_ <- unlist(strsplit(stat_v, ' '))
-  
-  suffix_end <- stringr::str_locate(stat_[2], '<')[, 1]
-  
-  data.frame(stat = gsub("[^A-Za-z0-9]", '', stat_[1]),
-             value = as.numeric(substr(stat_[2], 2, suffix_end - 1)))
-  
-}
+  # Convert to a data.frame
+  all_proj <- purrr::map(.x = proj_obj,
+                       .f = brToTable) %>%
+                dplyr::bind_rows() %>%
+                dplyr::distinct(stat, player_id, .keep_all = T) %>%
+                tidyr::spread(key = 'stat', value = 'value')
 
-brExtractID <- function(name_obj){
-  prefix_end <- stringr::str_locate(name_obj[1], 'data-append-csv=')[, 2]
-  name_v <- substr(name_obj, prefix_end + 1, nchar(name_obj))
-  suffix_start <- stringr::str_locate(name_v, ' data-stat')[1, ]
-  name_v <- substr(name_v, 1, suffix_start)
-  gsub("[^A-Za-z0-9]", '', name_v)
+  ## Split into batting and pitching
+  
+  # Batting
+  bat_proj <- structure(all_proj %>%
+                        dplyr::filter(!is.na(AB)) %>%
+                        dplyr::select(ab = AB, h = H, r = R, hr = HR, rbi = RBI, bb = BB,
+                                      avg = battingavg, obp = onbaseperc, 
+                                      slg = sluggingperc, so = SO, hbp = HBP, ibb = IBB,
+                                      sb = SB, sf = SF, sh = SH, gidp = GIDP, reliability),
+                      class = c('battingProj', 'tbl_df', 'tbl', 'data.frame'))
+
+  # Pitching
+  pitch_proj <- structure(all_proj %>%
+                          dplyr::filter(!is.na(IP)) %>%
+                          dplyr::select(ip = IP, k = SO, bb = BB, era = earnedrunavg,
+                                        h = H, r = R, sv = SV, whip, reliability),
+                        class = c('pitchingProj', 'tbl_df', 'tbl', 'data.frame'))
+
+  # Return
+  structure(list(batting = bat_proj,
+                 pitching = pitch_proj),
+            class = 'marcelProjections')                      
 }
 
 
 
 
-b <- strsplit(a[1456], 'td><td')
 
-c <- b[[1]][4:length(b[[1]])]
 
-j <- function(x) stringr::str_locate(x, 'stat')[,2] + 3
-
-jj <- function(x) substr(x, j(x), nchar(x)- 2)
-
-jjj <- function(x) strsplit(jj(x), ' ') %>% unlist()
-
-ff <- function(x) gsub(pattern = "[^A-Za-z0-9]", replacement = '', x)
-
-jjjj <- function(x){
-  xx<-jjj(x)
-  data.frame(name = ff(xx[1]),
-             value = as.numeric(gsub('>', '', xx[2])))
-} 
-
-jjjj(x) -> h
-
-lapply(c, jjjj)
+https://www.baseball-reference.com/leagues/MLB/2018-projections.shtml#all_marcel_batting
 
 
 
-# Read in raw htm data
-url_raw <- tryCatch({url %>% xml2::read_html() %>%
-    rvest::html_nodes(., css = 'body') %>%
-    rvest::html_text() %>%
-    strsplit('\n') %>%
-    unlist()}, error = function(e){NULL})
-
-  df <- read_html(paste0("http://www.baseball-reference.com/leagues/daily.cgi?user_team=&bust_cache=&type=p&lastndays=7&dates=fromandto&fromandto=", t1, ".", t2, "&level=mlb&franch=&stat=&stat_value=0"))
-  df <- df %>% html_nodes(xpath = '//*[@id="daily"]') %>% html_table(fill = TRUE)

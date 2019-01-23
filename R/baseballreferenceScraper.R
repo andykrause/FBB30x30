@@ -230,5 +230,61 @@ getBRStats.pitching <- function(type, year){
   
 }
 
+#' Get Marcel projections
+#' 
+#' Scrape the Marcel 2019 projections from baseball reference 
+#' 
+#' @param year year of stats
+#' @return Stats for that year
+#' @importFrom dplyr bind_rows filter distinct select
+#' @importFrom readr read_lines
+#' @importFrom tidyr spread
+#' @importFrom purrr map
+#' @export
+
+
+scrapeMarcelProjections <- function(year = 2018){
+  
+  # Make URL and scrape raw html
+  br_url <- paste0('https://www.baseball-reference.com/leagues/MLB/', year, 
+                   '-projections.shtml')
+  raw_html <- readr::read_lines(br_url)
+  
+  # Limit to table objects
+  proj_obj <- raw_html[grep('data-append-csv', raw_html)]
+  
+  # Convert to a data.frame
+  all_proj <- purrr::map(.x = proj_obj,
+                         .f = brToTable) %>%
+    dplyr::bind_rows() %>%
+    dplyr::distinct(stat, player_id, .keep_all = T) %>%
+    tidyr::spread(key = 'stat', value = 'value')
+  
+  ## Split into batting and pitching
+  
+  # Batting
+  bat_proj <- structure(all_proj %>%
+                          dplyr::filter(!is.na(AB)) %>%
+                          dplyr::select(ab = AB, h = H, r = R, hr = HR, rbi = RBI, bb = BB,
+                                        avg = battingavg, obp = onbaseperc, 
+                                        slg = sluggingperc, so = SO, hbp = HBP, ibb = IBB,
+                                        sb = SB, sf = SF, sh = SH, gidp = GIDP, reliability),
+                        class = c('battingProj', 'tbl_df', 'tbl', 'data.frame'))
+  
+  # Pitching
+  pitch_proj <- structure(all_proj %>%
+                            dplyr::filter(!is.na(IP)) %>%
+                            dplyr::select(ip = IP, k = SO, bb = BB, era = earnedrunavg,
+                                          h = H, r = R, sv = SV, whip, reliability),
+                          class = c('pitchingProj', 'tbl_df', 'tbl', 'data.frame'))
+  
+  # Return
+  structure(list(batting = bat_proj,
+                 pitching = pitch_proj),
+            class = 'marcelProjections')                      
+}
+
+
+
 
   

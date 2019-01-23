@@ -67,89 +67,142 @@
 
 #' Basic fielding statistics
 #' 
-#' Lahman Database fielding stats: 2014 - 2017
+#' Baseball reference fielding stats: 2014 - 2018
 #' 
 #' @docType data
-#' @usage data(fielding_ndf)
-#' @source Lahman baseball database
-#' @format A \code{"fielding", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 
-#' 7,749 rows and 3 (4) variables
+#' @usage data(fielding_df)
+#' @source www.baseball-reference.com (via getBRStats(type = 'fielding))
+#' @format A \code{"fielding", 'tbl_df', 'tbl', "data.frame"} data.frame with 
+#' 6,729 rows and 7 variables
 #' \describe{
-#'   \item{player_id}{The unique Lahman player ID [fct]}
-#'   \item{year}{Year of data [int]}
-#'   \item{fielding_stats}{Nested data.frame of fielding stats [list]}
-#'   \item{...team}{Players team (Lahman code) [fct]}
-#'   \item{...pos}{Position played [fct]}
-#'   \item{...g}{Games at that position [int]}
-#'   \item{...e}{Errors at that position [int]}
+#'   \item{player_id}{The unique Lahman player ID [chr]}
+#'   \item{g}{Games played [int]}
+#'   \item{gs}{Games started [int]}
+#'   \item{cg}{Complete games [int]}
+#'   \item{innings}{Games at that position [num]}
+#'   \item{e}{Errors at that position [int]}
+#'   \item{year}{Year of stats [int]}
 #'}
-"fielding_ndf"
+"fielding_df"
 
 #' Basic batting statistics
 #' 
-#' Lahman Database batting stats: 2014 - 2017
+#' Baseball reference batting stats: 2014 - 2018
 #' 
 #' @docType data
-#' @usage data(batting_ndf)
-#' @source Lahman baseball database
-#' @format A \code{"batting", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 5,898
-#'  rows and 3 (20) variables
+#' @usage data(batting_df)
+#' @source www.baseball-reference.com (via getBRStats(type = 'batting))
+#' @format A \code{"batting", 'tbl_df', 'tbl', "data.frame"} data.frame with 
+#' 6,211 rows and 21 variables
 #' \describe{
-#'   \item{player_id}{The unique Lahman player ID [fct]}
+#'   \item{player_id}{The unique Lahman player ID [chr]}
+#'   \item{pa}{Plate Appearances [int]}
+#'   \item{ab}{At bats [int]}
+#'   \item{h}{hits [int]}
+#'   \item{r}{Runs [int]}
+#'   \item{hr}{Home Runs [int]}
+#'   \item{rbi}{Runs batted in [int]}
+#'   \item{bb}{Base on balls (Walks) [int]}
+#'   \item{hbp}{Hit by pitch [int]}
+#'   \item{ibb}{Intentional Walks [int]}
+#'   \item{sb}{Stolen bases [int]}
+#'   \item{so}{Strikeouts [int]}
+#'   \item{x2b}{Doubles [int]}
+#'   \item{x3b}{Triples [int]}
+#'   \item{avg}{Batting average [num]}
+#'   \item{obp}{On base percentage [num]}
+#'   \item{slg}{Slugging percentage [num]}
+#'   \item{gidp}{Ground into double plays [int]}
+#'   \item{sf}{Sacrifice flies [int]}
+#'   \item{sh}{Sacrifice hits (bunts) [int]}
 #'   \item{year}{Year of data [int]}
-#'   \item{batting_stats}{Nested data.frame of batting stats [list]}
-#'   \item{...team}{Players team (Lahman code) [fct]}
-#'   \item{...g}{Games at that position [int]}
-#'   \item{...ab}{At bats [int]}
-#'   \item{...r}{Runs [int]}
-#'   \item{...hr}{Home Runs [int]}
-#'   \item{...rbi}{Runs batted in [int]}
-#'   \item{...sb}{Stolen bases [int]}
-#'   \item{...so}{Strikeouts [int]}
-#'   \item{...gidp}{Ground into double plays [int]}
-#'   \item{...sh}{Sacrifice hits (bunts) [int]}
-#'   \item{...sf}{Sacrifice flies [int]}
-#'   \item{...h}{Hits [int]}
-#'   \item{...x2b}{Doubles [int]}
-#'   \item{...x3b}{Triples [int]}
-#'   \item{...ibb}{Intentional Walks [int]}
-#'   \item{...hbp}{Hit by pitch [int]}
-#'   \item{...bb}{Base on balls (Walks) [int]}
-#'   \item{...slg}{Slugging percentage [dbl]}
-#'   \item{...pa}{Plate Appearances [int]}
-#'   \item{...obp}{On base percentage [dbl]}
 #'}
-"batting_ndf"
+"batting_df"
 
 #' Basic pitching statistics
 #' 
-#' Lahman Database pitching stats: 2014 - 2017
+#' Baseball reference pitching stats: 2014 - 2018
 #' 
 #' @docType data
-#' @usage data(pitching_ndf)
-#' @source Lahman baseball database
-#' @format A \code{"pitching", 'tbl_df', 'tbl', "data.frame"} nested data.frame with 
-#' 2,924 rows and 3 (13) variables
+#' @usage data(pitching_df)
+#' @source www.baseball-reference.com (via getBRStats(type = 'pitching))
+#' @format A \code{"pitching", 'tbl_df', 'tbl', "data.frame"} data.frame with 
+#' 3,723 rows and 11 variables
 #' \describe{
-#'   \item{player_id}{The unique Lahman player ID [fct]}
+#'   \item{player_id}{The unique Lahman player ID [chr]}
+#'   \item{ip}{Innings pitched [num]}
+#'   \item{g}{Games [int]}
+#'   \item{gs}{Games started [int]}
+#'   \item{k}{Strikeouts [int]}
+#'   \item{sv}{Saves [int]}
+#'   \item{w}{Wins [int]}
+#'   \item{whip}{(Walks + Hits) / Innings Pitched [num]}
+#'   \item{qs}{Quality starts [int]}
+#'   \item{holds}{Holds [int]}
 #'   \item{year}{Year of data [int]}
-#'   \item{pitching_stats}{Nested data.frame of pitching stats [list]}
-#'   \item{...team}{Players team (Lahman code) [fct]}
-#'   \item{...w}{Wins [int]}
-#'   \item{...g}{Games [int]}
-#'   \item{...gs}{Games started [int]}
-#'   \item{...h}{Hits allowed [int]}
-#'   \item{...er}{Earned runs allowed [int]}
-#'   \item{...bb}{Base on balls issued [int]}
-#'   \item{...k}{Strikeouts [int]}
-#'   \item{...ibb}{Intentional Walks [int]}
-#'   \item{...sv}{Saves [int]}
-#'   \item{...ip}{Innings pitched [int]}
-#'   \item{...whip}{(Walks + Hits) / Innings Pitched [dbl]}
 #'}
-"pitching_ndf"
+"pitching_df"
 
 ### Projections and Rankings -------------------------------------------------------------
+
+#' 
+#' Marcel projections from Baseball Reference
+#' 
+#' 2018 Marcel Projections from Baseball-Reference.com.  Batting and pitching
+#' 
+#' @docType data
+#' @usage data(marcel2018_proj)
+#' @source Baseball Reference
+#' @format A list class \code{"marcelProjections"} containing two data.frames.
+#' \describe{
+#'   \item{batting}{ A \code{'battingProj', 'tbl_df', 'tbl', "data.frame"}  with 506 
+#'   rows and 17 columns}
+#'   \item{...ab}{At bats [int]}
+#'   \item{...h}{Hits [int]}
+#'   \item{...r}{Runs [int]}
+#'   \item{...hr}{Home runs [int]}
+#'   \item{...rbi}{Runs batted in [int]}
+#'   \item{...bb}{Walks [int]}
+#'   \item{...avg}{Batting average [num]}
+#'   \item{...obp}{On base percentage [num]}
+#'   \item{...slg}{Slugging Percentage [num]}
+#'   \item{...so}{Strikeouts [int]}
+#'   \item{...hbp}{hit by pitch [int]}
+#'   \item{...ibb}{Intentional walks [int]}
+#'   \item{...sb}{Stolen bases [int]}
+#'   \item{...sf}{Sacrifice flies [int]}
+#'   \item{...sh}{Sacrifice hits [int]}
+#'   \item{...gidp}{Grounded into double plays [int]}
+#'   \item{...reliability}{Percent of forecast due to player [num]}
+#'   \item{pitching}{A \code{'pitchingProj', 'tbl_df', 'tbl', 'data.frame'} with 611 
+#'   rows and 9 columns.}
+#'   \item{...ip}{Innings Pitched [int]}
+#'   \item{...k}{Strikeouts [int]}
+#'   \item{...bb}{Walks [int]}
+#'   \item{...era}{Earned Run Average [num]}
+#'   \item{...h}{Hits [int]}
+#'   \item{...r}{Runs [int]}
+#'   \item{...sv}{Saves [int]}
+#'   \item{...whip}{Walks + Hits / IP [num]}
+#'   \item{...reliability}{Percent of forecast due to player [num]}
+#'}
+"marcel2018_proj"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #' 
 #' Batting Projections

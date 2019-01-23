@@ -7,16 +7,25 @@ output: html_document
 
 ## TO DOS
 
-1. Get Hold and QS Data (get from BR.  Make list of all available tables.)
-2. Build process to create projections for:
+1. Build process to create projections for:
     * Errors
     * GIDP
     * Holds
     * Quality Starts
-3. Outline system for updating to 2019 data
-4. Compute statistics marginal values (DONE: See `Season Analysis.R`)
+2. Outline system for updating to 2019 data
+3. Compute statistics marginal values (DONE: See `Season Analysis.R`)
 4. Build a mock draft system
 5. 
+
+
+Projections: Marcel, Pecota, ZiPS and Steamer
+
+Fan graphs has wide variety of these for download
+
+Steamer: https://drive.google.com/drive/folders/0B7tJg2i5HAo2c0VzVFVhLUdQcnM
+         http://steamerprojections.com/blog/
+         
+         
 
 
 ## Data

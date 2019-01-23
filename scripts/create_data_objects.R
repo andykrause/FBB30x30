@@ -106,25 +106,25 @@
    
    usethis::use_data(pitching_df, overwrite=TRUE)
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
 ### Projections --------------------------------------------------------------------------
 
+   ## Marcel
+   
+   marcel2018_proj <- scrapeMarcelProjections(year = 2018)
+   
+   usethis::use_data(marcel2018_proj, overwrite = TRUE)
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    ## Load Projection Data
 
     # Hitters
