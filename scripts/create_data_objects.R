@@ -114,17 +114,6 @@
    
    usethis::use_data(marcel2018_proj, overwrite = TRUE)
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
    ## Load Projection Data
 
     # Hitters
@@ -219,7 +208,6 @@
     batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018) %>%
       tibble::as.tibble()%>%
       dplyr::select(player, team, year, tidyselect::everything())
-    
 
    ## Pitchers
 
@@ -290,6 +278,14 @@
       tibble::as.tibble() %>%
       dplyr::select(player, team, year, tidyselect::everything())
 
+    ## Add IDS
+    
+    batprojs_df <- batprojs_df %>%
+      addPlayerID(., players_df = players_df)
+    
+    pitchprojs_df <- pitchprojs_df %>%
+      addPlayerID(., players_df = players_df)
+    
   ## Save
     
   usethis::use_data(batprojs_df, overwrite=TRUE)
@@ -364,6 +360,9 @@
     tibble::as.tibble() %>%
     dplyr::select(player, team, pos, year, rank, tidyselect::everything())
     
+  r <- rankings_df %>%
+    addPlayerID(., players_df)
+  
   usethis::use_data(rankings_df, overwrite=TRUE) 
   
 ### Seasons ------------------------------------------------------------------------------
