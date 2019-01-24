@@ -5,7 +5,7 @@
 \alias{batprojs_df}
 \title{Batting Projections}
 \format{A \code{"battingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
-3,479 rows and 18 variables
+3,752 rows and 18 variables
 \describe{
   \item{player}{Standard player name [fct]}
   \item{year}{Year of data [int]}
@@ -25,6 +25,7 @@
   \item{obp}{On base percentage [dbl]}
   \item{slg}{Slugging percentage [dbl]}
   \item{ops}{On base percentage plus slugging [dbl]}
+  \item{player_id}{Lahman player id [chr]}
 }}
 \source{
 Fantasy Pros Website

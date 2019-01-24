@@ -65,6 +65,9 @@ fixFPName <- function(df,
 addPlayerID <- function(x_df,
                         players_df){
   
+  players_df$first <- gsub(' ', '', players_df$first)
+  players_df$full <- paste0(players_df$first, ' ', players_df$last)
+  
   ## Make matches
   
   match_df <- x_df %>%
@@ -78,9 +81,7 @@ addPlayerID <- function(x_df,
   ## Isolate the single matches from double and those that missed
   
   match_1 <- match_df %>%
-    dplyr::filter(count == 1 & !is.na(player_id)) %>%
-    dplyr::mutate(temp_id = NULL,
-                  count = NULL)
+    dplyr::filter(count == 1 & !is.na(player_id))
   message(nrow(match_1),' of ', nrow(x_df), ' direct matches\n')
   
   match_more <- match_df %>% dplyr::filter(count > 1)
@@ -99,8 +100,6 @@ addPlayerID <- function(x_df,
   match_more <- bind_rows(purrr::map(.x = split(match_more, match_more$temp_id),
                                      dup_df = dup_df,
                                      .f = prepMatchDup)) %>%
-    dplyr::mutate(temp_id = NULL,
-                  count = NULL) %>%
     dplyr::filter(!is.na(player_id)) %>%
     dplyr::distinct(player_id, year, .keep_all = TRUE)
   message('...', nrow(match_more),' duplicates matched on second try\n')
@@ -108,28 +107,27 @@ addPlayerID <- function(x_df,
   
   ## Work on the non matches
   match_no <- match_no %>%
-    dplyr::mutate(temp_id = NULL,
-                  count = NULL,
-                  player = gsub(' Jr.', '', player))
+    dplyr::mutate(player = gsub(' Jr.', '', player))
   
   space_loc <- unlist(lapply(str_locate_all(match_no$player, " "),
                              function(x) max(unlist(x))))
   match_no$last_name <- tolower(substr(match_no$player, space_loc + 1, 100))
-  match_no$temp_id <- 1:nrow(match_no)
-  
+
   player_last <- players_df %>%
     dplyr::mutate(last = tolower(last)) %>%
     dplyr::filter(last %in% match_no$last_name)
   
   match_none <- dplyr::bind_rows(purrr::map(.x = split(match_no, match_no$temp_id),
                                             .f = prepMatchNone,
-                                            player_df = player_last)) %>%
-    dplyr::mutate(last_name = NULL,
-                  temp_id = NULL)
+                                            player_df = player_last))
   message('...', nrow(match_none),' missing matched on second try\n')
   
-  dplyr::bind_rows(list(match_1, match_more, match_none))
+  matched_ids <- c(match_1$temp_id, match_more$temp_id, match_none$temp_id)
+  not_matched <- match_df[!match_df$temp_id %in% matched_ids, ] %>%
+    dplyr::mutate(player_id = NA)
   
+  dplyr::bind_rows(list(match_1, match_more, match_none, not_matched)) %>%
+    dplyr::select(-temp_id, -count, -last_name) 
 }
 
 #' @title prepMatchDup
@@ -151,10 +149,11 @@ prepMatchDup <- function(match_df,
   retros <- dup_df$retro_id[dup_df$full == imd$player[i]]
   res_df <- purrr::map(.x = retros,
                        .f = scrapeRetroAnnualData,
-                       year = imd$year[i]) %>%
+                       year = pmin(imd$year[i], 2018)) %>%
     purrr::map(., .f = function(x){
       data.frame(player_id = x$fielding$playerid,
-                 team = x$fielding$team) %>%
+                 team = x$fielding$team,
+                 stringsAsFactors = FALSE) %>%
         dplyr::distinct(team, .keep_all = T)}) %>%
     dplyr::bind_rows()
   res_df <- res_df %>%
@@ -162,7 +161,7 @@ prepMatchDup <- function(match_df,
                        rename(team = retrosheet_id), by = 'team')
   
   res_df <- res_df[res_df$team_id == imd$team, ] 
-  match_df$player_id <- res_df$player_id[1]
+  match_df$player_id <- as.character(res_df$player_id[1])
   match_df
 }
 

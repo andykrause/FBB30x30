@@ -188,22 +188,6 @@
 #'}
 "marcel2018_proj"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #' 
 #' Batting Projections
 #' 
@@ -213,7 +197,7 @@
 #' @usage data(batprojs_df)
 #' @source Fantasy Pros Website
 #' @format A \code{"battingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
-#' 3,479 rows and 18 variables
+#' 3,752 rows and 18 variables
 #' \describe{
 #'   \item{player}{Standard player name [fct]}
 #'   \item{year}{Year of data [int]}
@@ -233,6 +217,7 @@
 #'   \item{obp}{On base percentage [dbl]}
 #'   \item{slg}{Slugging percentage [dbl]}
 #'   \item{ops}{On base percentage plus slugging [dbl]}
+#'   \item{player_id}{Lahman player id [chr]}
 #'}
 "batprojs_df"
 
@@ -245,7 +230,7 @@
 #' @usage data(pitchprojs_df)
 #' @source Fantasy Pros Website
 #' @format A \code{"pitchingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
-#' 4,069 rows and 17 variables
+#' 4,364 rows and 17 variables
 #' \describe{
 #'   \item{player}{Standard player name [fct]}
 #'   \item{year}{Year of data [int]}
@@ -263,6 +248,7 @@
 #'   \item{bb}{Base on balls issued [int]}
 #'   \item{era}{Earned Run Average [dbl]}
 #'   \item{whip}{(Walks + Hits) / Innings Pitched [dbl]} 
+#'   \item{player_id}{Lahman player id [chr]}
 #' }
 "pitchprojs_df"
 
@@ -274,7 +260,7 @@
 #' @docType data
 #' @usage data(rankings_df)
 #' @source Fantasy Pros Website
-#' @format A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 1,786 rows 
+#' @format A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 2,529 rows 
 #' and 10 variables
 #' \describe{
 #'   \item{player}{Standard player name [chr]}
@@ -287,6 +273,7 @@
 #'   \item{avg}{Average drafted position [dbl]}
 #'   \item{std.dev}{St. Dev of average draft position [dbl]}
 #'   \item{adp}{Average draft position (rounded and rank ordered) [dbl]}
+#'   \item{player_id}{Lahman player id [chr]}
 #' }
 "rankings_df"
 

@@ -127,6 +127,9 @@
                                   'fp_hitters_2017.csv'))
     hp_2018 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
                                   'fp_hitters_2018.csv'))
+    hp_2019 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
+                                  'fp_hitters_2019.csv'))
+    
 
     # Hitters
     pp_2014 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
@@ -139,6 +142,9 @@
                                   'fp_pitchers_2017.csv'))
     pp_2018 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
                                   'fp_pitchers_2018.csv'))
+    pp_2019 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
+                                  'fp_pitchers_2019.csv'))
+    
 
    ## Standardize Projection Data
 
@@ -203,9 +209,19 @@
                     pos = gsub('/', ' | ', pos),
                     player = as.character(player),
                     team = as.character(team))
-
+    
+    # 2019
+    names(hp_2019) <- tolower(names(hp_2019))
+    hp_2019 <- hp_2019 %>%
+      dplyr::rename(pos = positions) %>%
+      dplyr::mutate(year = 2019,
+                    pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    player = as.character(player),
+                    team = as.character(team))
+    
     # Combine
-    batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018) %>%
+    batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018, hp_2019) %>%
       tibble::as.tibble()%>%
       dplyr::select(player, team, year, tidyselect::everything())
 
@@ -272,19 +288,34 @@
                     team = as.character(team)) %>%
       dplyr::select(-c(hr))
     
+    # 2019
+    names(pp_2019) <- tolower(names(pp_2019))
+    pp_2019 <- pp_2019 %>%
+      dplyr::rename(pos = positions) %>%
+      dplyr::mutate(pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    year = 2019,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
+      dplyr::select(-c(hr))
+    
 
     # Combine Al
-    pitchprojs_df <- rbind(pp_2014, pp_2015, pp_2016, pp_2017, pp_2018) %>%
+    pitchprojs_df <- rbind(pp_2014, pp_2015, pp_2016, pp_2017, pp_2018, pp_2019) %>%
       tibble::as.tibble() %>%
       dplyr::select(player, team, year, tidyselect::everything())
 
     ## Add IDS
     
     batprojs_df <- batprojs_df %>%
-      addPlayerID(., players_df = players_df)
+      addPlayerID(., players_df = players_df) %>%
+      dplyr::select(player_id, year, player, team, tidyselect::everything())
+    
     
     pitchprojs_df <- pitchprojs_df %>%
-      addPlayerID(., players_df = players_df)
+      addPlayerID(., players_df = players_df)%>%
+      dplyr::select(player_id, year, player, team, tidyselect::everything())
+    
     
   ## Save
     
@@ -300,7 +331,9 @@
                                   'fp_draftrankings_2017.csv'))
   rank_2018 <- read.csv(file.path(getwd(), 'data', 'raw', 'rankings', 
                                   'fp_draftrankings_2018.csv'))
-  
+  rank_2019 <- read.csv(file.path(getwd(), 'data', 'raw', 'rankings', 
+                                  'fp_draftrankings_2019.csv'))
+
   # 2016
   names(rank_2016) <- tolower(names(rank_2016))
   rank_2016 <- rank_2016 %>% 
@@ -355,13 +388,31 @@
     tibble::as.tibble()
   rank_2018$adp[is.na(rank_2018$adp)] <- ceiling(rank_2018$avg[is.na(rank_2018$adp)])
   
+  # 2019
+  names(rank_2019) <- tolower(names(rank_2019))
+  rank_2019 <- rank_2019 %>% 
+    dplyr::rename(pos = positions) %>%
+    dplyr::mutate(pos = gsub(',', '/', pos),
+                  pos = gsub('/', ' | ', pos),
+                  year = 2019,
+                  vs..adp = NULL,
+                  team = as.character(team),
+                  player = as.character(player)) %>%
+    tibble::as.tibble()
+  
+  ## TEMP
+  rank_2019$adp <- 0
+  rank_2019$adp[is.na(rank_2019$adp)] <- ceiling(rank_2019$avg[is.na(rank_2019$adp)])
+  
+  
   # Combine All
-  rankings_df <- rbind(rank_2016, rank_2017, rank_2018) %>%
+  rankings_df <- rbind(rank_2016, rank_2017, rank_2018, rank_2019) %>%
     tibble::as.tibble() %>%
     dplyr::select(player, team, pos, year, rank, tidyselect::everything())
     
-  r <- rankings_df %>%
-    addPlayerID(., players_df)
+  rankings_df <- rankings_df %>%
+    addPlayerID(., players_df) %>%
+    dplyr::select(player_id, year, tidyselect::everything())
   
   usethis::use_data(rankings_df, overwrite=TRUE) 
   

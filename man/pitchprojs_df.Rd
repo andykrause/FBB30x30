@@ -5,7 +5,7 @@
 \alias{pitchprojs_df}
 \title{Pitching Projections}
 \format{A \code{"pitchingprojections", 'tbl_df', 'tbl', "data.frame"} data.frame with 
-4,069 rows and 17 variables
+4,364 rows and 17 variables
 \describe{
   \item{player}{Standard player name [fct]}
   \item{year}{Year of data [int]}
@@ -23,6 +23,7 @@
   \item{bb}{Base on balls issued [int]}
   \item{era}{Earned Run Average [dbl]}
   \item{whip}{(Walks + Hits) / Innings Pitched [dbl]} 
+  \item{player_id}{Lahman player id [chr]}
 }}
 \source{
 Fantasy Pros Website

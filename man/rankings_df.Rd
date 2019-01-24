@@ -4,7 +4,7 @@
 \name{rankings_df}
 \alias{rankings_df}
 \title{Draft Rankings}
-\format{A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 1,786 rows 
+\format{A \code{"rankings", 'tbl_df', 'tbl', "data.frame"} data.frame with 2,529 rows 
 and 10 variables
 \describe{
   \item{player}{Standard player name [chr]}
@@ -17,6 +17,7 @@ and 10 variables
   \item{avg}{Average drafted position [dbl]}
   \item{std.dev}{St. Dev of average draft position [dbl]}
   \item{adp}{Average draft position (rounded and rank ordered) [dbl]}
+  \item{player_id}{Lahman player id [chr]}
 }}
 \source{
 Fantasy Pros Website
