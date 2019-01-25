@@ -82,7 +82,7 @@
 ### Statistics ---------------------------------------------------------------------------
   
   # Read in Fielding data
-  fielding_df <- purrr::map(.x = 2014:2018,
+  fielding_df <- purrr::map(.x = 2013:2018,
                             .f = getBRStats,
                             type ='fielding') %>%
     dplyr::bind_rows()
@@ -90,7 +90,7 @@
    usethis::use_data(fielding_df, overwrite=TRUE)
    
   # Load Data
-   batting_df <- purrr::map(.x = 2014:2018,
+   batting_df <- purrr::map(.x = 2013:2018,
                             .f = getBRStats,
                             type ='batting') %>%
      dplyr::bind_rows()
@@ -99,7 +99,7 @@
    
  ## Pitching stats
    
-   pitching_df <- purrr::map(.x = 2014:2018,
+   pitching_df <- purrr::map(.x = 2013:2018,
                              .f = getBRStats,
                              type ='pitching') %>%
      dplyr::bind_rows()
@@ -126,7 +126,8 @@
     hp_2017 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
                                   'fp_hitters_2017.csv'))
     hp_2018 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
-                                  'fp_hitters_2018.csv'))
+                                  'fp_hitters_2018.csv')) %>%
+      dplyr::filter(Team != '158')
     hp_2019 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
                                   'fp_hitters_2019.csv'))
     
@@ -162,7 +163,16 @@
                     year = 2014,
                     player = as.character(player),
                     team = as.character(team)) %>%
-      dplyr::select(-c(cs, type))
+      dplyr::select(-c(cs, type)) %>%
+      addPlayerID(., players_df = players_df) 
+      
+      gidp_df <- projectGIDP(batting_df, hp_2014, proj_year = 2014)
+      e_df <- projectErrors(fielding_df, hp_2014, proj_year = 2014)
+      
+      hp_2014 <- hp_2014 %>%
+        dplyr::left_join(gidp_df, by = 'player_id') %>%
+        dplyr::left_join(e_df, by = 'player_id')
+      
 
     # 2015
     names(hp_2015) <- tolower(names(hp_2015))
@@ -176,8 +186,16 @@
                     team = as.character(team)) %>%
       dplyr::rename(so = k, 
                     ops = obps) %>%
-      dplyr::select(-c(cs, g, al.nl.., mixed.., name))
-  
+      dplyr::select(-c(cs, g, al.nl.., mixed.., name))%>%
+      addPlayerID(., players_df = players_df) 
+    
+    gidp_df <- projectGIDP(batting_df, hp_2015, proj_year = 2015)
+    e_df <- projectErrors(fielding_df, hp_2015, proj_year = 2015)
+    
+    hp_2015 <- hp_2015 %>%
+      dplyr::left_join(gidp_df, by = 'player_id') %>%
+      dplyr::left_join(e_df, by = 'player_id')
+    
     # 2016
     names(hp_2016) <- tolower(names(hp_2016))
     hp_2016 <- hp_2016 %>%
@@ -190,15 +208,34 @@
                     pos = gsub('/', ' | ', pos),
                     year = 2016,
                     player = as.character(player),
-                    team = as.character(team))
+                    team = as.character(team)) %>%
+      addPlayerID(., players_df = players_df) 
+    
+    gidp_df <- projectGIDP(batting_df, hp_2016, proj_year = 2016)
+    e_df <- projectErrors(fielding_df, hp_2016, proj_year = 2016)
+    
+    hp_2016 <- hp_2016 %>%
+      dplyr::left_join(gidp_df, by = 'player_id') %>%
+      dplyr::left_join(e_df, by = 'player_id')
+    
     
     # 2017
     names(hp_2017) <- tolower(names(hp_2017))
     hp_2017 <- hp_2017 %>%
       fixFPName(.) %>%
       dplyr::mutate(year = 2017,
+                    pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
                     player = as.character(player),
-                    team = as.character(team))
+                    team = as.character(team)) %>%
+      addPlayerID(., players_df = players_df) 
+    
+    gidp_df <- projectGIDP(batting_df, hp_2017, proj_year = 2017)
+    e_df <- projectErrors(fielding_df, hp_2017, proj_year = 2017)
+    
+    hp_2017 <- hp_2017 %>%
+      dplyr::left_join(gidp_df, by = 'player_id') %>%
+      dplyr::left_join(e_df, by = 'player_id')
     
     # 2018
     names(hp_2018) <- tolower(names(hp_2018))
@@ -208,7 +245,16 @@
                     pos = gsub(',', '/', pos),
                     pos = gsub('/', ' | ', pos),
                     player = as.character(player),
-                    team = as.character(team))
+                    team = as.character(team))%>%
+      addPlayerID(., players_df = players_df) 
+    
+    gidp_df <- projectGIDP(batting_df, hp_2018, proj_year = 2018)
+    e_df <- projectErrors(fielding_df, hp_2018, proj_year = 2018)
+    
+    hp_2018 <- hp_2018 %>%
+      dplyr::left_join(gidp_df, by = 'player_id') %>%
+      dplyr::left_join(e_df, by = 'player_id')
+    
     
     # 2019
     names(hp_2019) <- tolower(names(hp_2019))
@@ -218,12 +264,20 @@
                     pos = gsub(',', '/', pos),
                     pos = gsub('/', ' | ', pos),
                     player = as.character(player),
-                    team = as.character(team))
+                    team = as.character(team)) %>%
+      addPlayerID(., players_df = players_df) 
+    
+    gidp_df <- projectGIDP(batting_df, hp_2019, proj_year = 2019)
+    e_df <- projectErrors(fielding_df, hp_2019, proj_year = 2019)
+    
+    hp_2019 <- hp_2019 %>%
+      dplyr::left_join(gidp_df, by = 'player_id') %>%
+      dplyr::left_join(e_df, by = 'player_id')
     
     # Combine
     batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018, hp_2019) %>%
       tibble::as.tibble()%>%
-      dplyr::select(player, team, year, tidyselect::everything())
+      dplyr::select(player_id, player, team, year, tidyselect::everything())
 
    ## Pitchers
 
@@ -238,8 +292,16 @@
                     year = 2014,
                     player = as.character(player),
                     team = as.character(team)) %>%
-      dplyr::select(-c(hd, hr, type, bs))
-                    
+      dplyr::select(-c(hd, hr, type, bs))%>%
+      addPlayerID(., players_df = players_df) 
+    
+    qs_df <- projectQS(pitching_df, pp_2014, proj_year = 2014)
+    holds_df <- projectHolds(pitching_df, pp_2014, proj_year = 2014)
+    
+    pp_2014 <- pp_2014 %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id')
+    
     # 2015
     names(pp_2015) <- tolower(names(pp_2015))
     pp_2015 <- pp_2015 %>%
@@ -254,7 +316,15 @@
                     year = 2015,
                     player = as.character(player),
                     team = as.character(team)) %>%
-      dplyr::select(-c(al.nl.., mixed.., sho, name, gsp))
+      dplyr::select(-c(al.nl.., mixed.., sho, name, gsp))%>%
+      addPlayerID(., players_df = players_df) 
+    
+    qs_df <- projectQS(pitching_df, pp_2015, proj_year = 2015)
+    holds_df <- projectHolds(pitching_df, pp_2015, proj_year = 2015)
+    
+    pp_2015 <- pp_2015 %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id')
     
     # 2016
     names(pp_2016) <- tolower(names(pp_2016))
@@ -266,16 +336,34 @@
                     year = 2016,
                     player = as.character(player),
                     team = as.character(team)) %>%
-      dplyr::select(-c(hr))
+      dplyr::select(-c(hr))%>%
+      addPlayerID(., players_df = players_df) 
+    
+    qs_df <- projectQS(pitching_df, pp_2016, proj_year = 2016)
+    holds_df <- projectHolds(pitching_df, pp_2016, proj_year = 2016)
+    
+    pp_2016 <- pp_2016 %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id')
     
     # 2017
     names(pp_2017) <- tolower(names(pp_2017))
     pp_2017 <- pp_2017 %>%
       fixFPName() %>%
       dplyr::mutate(year = 2017,
+                    pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
                     player = as.character(player),
                     team = as.character(team)) %>%
-      dplyr::select(-c(hr))
+      dplyr::select(-c(hr))%>%
+      addPlayerID(., players_df = players_df) 
+    
+    qs_df <- projectQS(pitching_df, pp_2017, proj_year = 2017)
+    holds_df <- projectHolds(pitching_df, pp_2017, proj_year = 2017)
+    
+    pp_2017 <- pp_2017 %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id')
     
     # 2018
     names(pp_2018) <- tolower(names(pp_2018))
@@ -286,7 +374,15 @@
                     year = 2018,
                     player = as.character(player),
                     team = as.character(team)) %>%
-      dplyr::select(-c(hr))
+      dplyr::select(-c(hr))%>%
+      addPlayerID(., players_df = players_df) 
+    
+    qs_df <- projectQS(pitching_df, pp_2018, proj_year = 2018)
+    holds_df <- projectHolds(pitching_df, pp_2018, proj_year = 2018)
+    
+    pp_2018 <- pp_2018 %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id')
     
     # 2019
     names(pp_2019) <- tolower(names(pp_2019))
@@ -297,26 +393,21 @@
                     year = 2019,
                     player = as.character(player),
                     team = as.character(team)) %>%
-      dplyr::select(-c(hr))
+      dplyr::select(-c(hr))%>%
+      addPlayerID(., players_df = players_df) 
     
-
+    qs_df <- projectQS(pitching_df, pp_2019, proj_year = 2019)
+    holds_df <- projectHolds(pitching_df, pp_2019, proj_year = 2019)
+    
+    pp_2019 <- pp_2019 %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id')
+    
     # Combine Al
     pitchprojs_df <- rbind(pp_2014, pp_2015, pp_2016, pp_2017, pp_2018, pp_2019) %>%
       tibble::as.tibble() %>%
-      dplyr::select(player, team, year, tidyselect::everything())
+      dplyr::select(player_id, player, team, year, tidyselect::everything())
 
-    ## Add IDS
-    
-    batprojs_df <- batprojs_df %>%
-      addPlayerID(., players_df = players_df) %>%
-      dplyr::select(player_id, year, player, team, tidyselect::everything())
-    
-    
-    pitchprojs_df <- pitchprojs_df %>%
-      addPlayerID(., players_df = players_df)%>%
-      dplyr::select(player_id, year, player, team, tidyselect::everything())
-    
-    
   ## Save
     
   usethis::use_data(batprojs_df, overwrite=TRUE)

@@ -124,7 +124,8 @@ addPlayerID <- function(x_df,
   
   matched_ids <- c(match_1$temp_id, match_more$temp_id, match_none$temp_id)
   not_matched <- match_df[!match_df$temp_id %in% matched_ids, ] %>%
-    dplyr::mutate(player_id = NA)
+    dplyr::mutate(player_id = paste0('_', gsub(' ', '', player))) %>%
+    dplyr::distinct(player_id, .keep_all = T)
   
   dplyr::bind_rows(list(match_1, match_more, match_none, not_matched)) %>%
     dplyr::select(-temp_id, -count, -last_name) 
