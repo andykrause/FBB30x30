@@ -4,7 +4,7 @@
 \alias{categoryDiffEngine}
 \title{Analyze Season to get point differntials}
 \usage{
-categoryDiffEngine(x, metric = "median")
+categoryDiffEngine(x, metric = "median", trim = FALSE)
 }
 \arguments{
 \item{season}{A `season` object}

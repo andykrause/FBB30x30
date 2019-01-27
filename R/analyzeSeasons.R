@@ -22,7 +22,9 @@ seasonAnalysis <- function(season,
   
   x_mat <- season %>% 
     dplyr::select(-tidyselect::contains('starts'),
-                  -tidyselect::contains('moves'), -rank, -team)
+                  -tidyselect::contains('moves'), 
+                  -tidyselect::contains('rank'),
+                  -tidyselect::contains('team'))
   
   data.frame(category = names(x_mat),
              diff = unlist(lapply(x_mat, categoryDiffEngine, ...)),
@@ -40,9 +42,13 @@ seasonAnalysis <- function(season,
 #' @importFrom stats median
 #' @export
 
-categoryDiffEngine <- function(x, metric = 'median'){
+categoryDiffEngine <- function(x, metric = 'median', trim = FALSE){
   
   calcMetric <- get(metric)
-  xx <- sort(x)
+  if (trim){
+    xx <- sort(x)[2:(length(x) -1)]
+  } else {
+    xx <- sort(x)
+  }
   round(abs(calcMetric(xx[-1] - xx[-length(xx)])),3)
 }
