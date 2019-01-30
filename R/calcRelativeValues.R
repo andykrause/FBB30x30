@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 #' @export
 
 setRelValue <- function(projs_,
@@ -19,6 +14,7 @@ setRelValue <- function(projs_,
     dplyr::arrange(desc(total))
   
 }
+
 
 #' @export
 #' 
@@ -285,9 +281,209 @@ setPitchingRelValue <- function(projs_df,
   
 }
 
+#' @export
 
+setPosValueAdj <- function(projs_,
+                           rv_df,
+                           configs){  
+  
+  # Combine into a single data.frame unnested by positions
+  
+  projs_udf <- projs_$bat %>%
+    dplyr::select(player_id, player, team, year, pos) %>%
+    dplyr::filter(year == configs$season) %>%
+    dplyr::bind_rows(., projs_$pitch %>%
+                       dplyr::select(player_id, player, team, year, pos) %>%
+                       dplyr::filter(year == configs$season)) %>%
+    dplyr::left_join(rv_df %>%
+                       dplyr::select(-player), 
+                     by = 'player_id') %>%
+    dplyr::mutate(pos1 = strsplit(pos, ' | ')) %>%
+    tidyr::unnest() %>%
+    dplyr::filter(pos1 != '|')
+  
+  ## Hitters
+  
+  hitp1_df <- assignPositionPriority(type = 'hit',
+                                     priority = 1,
+                                     projs_udf = projs_udf,
+                                     configs = configs)
+  
+  hitp2_df <- assignPositionPriority(type = 'hit',
+                                     priority = 2,
+                                     projs_udf = projs_udf,
+                                     used_ids = hitp1_df$player_id,
+                                     configs = configs)
+  
+  hip_df <- dplyr::bind_rows(hitp1_df, hitp2_df)
+  
+  hitp3_df <- assignPositionPriority(type = 'hit',
+                                     priority = 3,
+                                     projs_udf = projs_udf,
+                                     used_ids = hip_df$player_id,
+                                     configs = configs)
+  
+  hip_df <- dplyr::bind_rows(hip_df, hitp3_df)
+  
+  hitp4_df <- assignPositionPriority(type = 'hit',
+                                     priority = 4,
+                                     projs_udf = projs_udf,
+                                     used_ids = hip_df$player_id,
+                                     configs = configs)
+  
+  hip_df <- dplyr::bind_rows(hip_df, hitp4_df)
+  
+  ## Pitchers
+  
+  pitp1_df <- assignPositionPriority(type = 'pitch',
+                                     priority = 1,
+                                     projs_udf = projs_udf,
+                                     configs = configs)
+  
+  pitp2_df <- assignPositionPriority(type = 'pitch',
+                                     priority = 2,
+                                     projs_udf = projs_udf,
+                                     used_ids = pitp1_df$player_id,
+                                     configs = configs)
+  
+  pip_df <- dplyr::bind_rows(pitp1_df, pitp2_df)
+  
+  all_df <- dplyr::bind_rows(hip_df, pip_df)
+  
+  all_df %>%
+    dplyr::arrange(total) %>%
+    dplyr::group_by(posx) %>%
+    dplyr::slice(1) %>%
+    dplyr::select(posx, priority, posx_adj = total) %>%
+    dplyr::arrange(priority, posx) %>%
+    dplyr::mutate(posx_adj = -posx_adj)
+  
+  
+}
 
+#' @export
 
+assignPositionPriority <- function(type,
+                                   priority,
+                                   projs_udf,
+                                   used_ids = NULL,
+                                   configs){
+  
+  # Extract roster info
+  ros_info <- configs$roster[configs$roster$priority == priority & 
+                               configs$roster$type == type, ]
+  
+  pos_df <- ros_info %>%
+    dplyr::select(roster, position) %>%
+    tidyr::unnest()
+  
+  # Extact possible players
+  player_df <- projs_udf %>%
+    dplyr::filter(pos1 %in% pos_df$position)
+  
+  if (priority > 1){
+    player_df <- player_df %>%
+      dplyr::filter(!player_id %in% used_ids) %>%
+      dplyr::left_join(., pos_df %>%
+                         select(pos1 = position,
+                                posx = roster))
+  } else {
+    player_df$posx <- player_df$pos1
+  }
+  
+  ## Assign to likely drafted position
+  
+  # Setup - Calculate starting pos means
+  p_ <- list()
+  
+  for (i in 1:nrow(ros_info)){
+    
+    i_pos <- unlist(pos_df$position[pos_df$roster == ros_info$roster[i]])
+    
+    p_[[i]] <- player_df %>%
+      dplyr::filter(pos1 %in% i_pos) %>%
+      dplyr::arrange(desc(total)) 
+    
+    p_[[i]] <- p_[[i]] %>%
+      dplyr::mutate(pos_rank = 1:nrow(p_[[i]]),
+                    pos_mean = mean(p_[[i]]$total[1:ros_info$population[i]]))
+  }
+  
+  player_df <- p_ %>% 
+    dplyr::bind_rows() %>%
+    dplyr::arrange(pos_rank, pos_mean) %>%
+    dplyr::distinct(player_id, .keep_all = TRUE)
+  
+  assign_df <- positionAssign(player_df,
+                              configs,
+                              priority)
+  
+  assign_df
+  
+}
+
+#' @export
+
+positionAssign <- function(player_df, 
+                           configs,
+                           priority){
+  
+  # Setup
+  go <- 1
+  pa_ <- list()
+  all_pos <- unique(player_df$posx)
+  
+  # Make Assignments
+  while (go == 1){
+    
+    p_df <- player_df[1, ]
+    cat(p_df$player, '...\n')
+    roster_pop <- configs$roster$population[which(configs$roster$roster == p_df$posx)]  
+    
+    if (is.null(pa_[[p_df$posx]])){
+      pa_[[p_df$posx]] <- p_df
+      player_df <- player_df %>% 
+        dplyr::filter(!player_id %in% p_df$player_id)
+      
+    } else {
+      
+      if (nrow(pa_[[p_df$posx]]) == roster_pop){
+        player_df <- player_df %>% 
+          dplyr::filter(!posx %in% p_df$posx) 
+      } else {
+        pa_[[p_df$posx]] <- rbind(pa_[[p_df$posx]], p_df)
+        player_df <- player_df %>% 
+          dplyr::filter(!player_id %in% p_df$player_id)
+      }
+    }
+    
+    ## Recalculate pos_mean and re-arrange
+    pm_df <- player_df %>%
+      dplyr::filter(posx %in% p_df$posx) %>%
+      dplyr::slice(1:roster_pop) %>%
+      dplyr::summarize(pos_mean = mean(total))
+    
+    player_df$pos_mean[player_df$posx == p_df$pos] <- pm_df$pos_mean
+    player_df <- player_df %>%
+      dplyr::arrange(pos_rank, pos_mean)
+    
+    if (nrow(dplyr::bind_rows(pa_)) == 
+        sum(configs$roster$population[which(configs$roster$roster %in% all_pos)])) go <- 0
+  }
+  
+  pa_df <- pa_ %>% dplyr::bind_rows()
+  
+  pav_df <- pa_df %>%
+    dplyr::group_by(posx) %>%
+    dplyr::summarize(min = -min(total))
+  
+  pa_df %>%
+    dplyr::left_join(., pav_df,
+                     by = 'posx') %>%
+    dplyr::rename(pos_adj = min) %>%
+    dplyr::mutate(priority = priority)
+  
+}
 
 
 
@@ -382,6 +578,31 @@ calRelValue <- function(data, name, rp, rv, configs){
 }
 
 
+#' @export
+
+setTeamValueAdj <- function(projs_,
+                            rv_df,
+                            configs){  
+  
+  projs_udf <- projs_$bat %>%
+    dplyr::select(player_id, player, team, year, pos) %>%
+    dplyr::filter(year == configs$season) %>%
+    dplyr::bind_rows(., projs_$pitch %>%
+                       dplyr::select(player_id, player, team, year, pos) %>%
+                       dplyr::filter(year == configs$season)) %>%
+    dplyr::left_join(., rv_df %>%
+                       dplyr::select(-player), 
+                     by='player_id')
+  
+  projs_udf %>%
+    dplyr::group_by(team) %>%
+    dplyr::arrange(desc(total)) %>%
+    dplyr::slice(configs$nbr_owner) %>%
+    dplyr::mutate(team_adj = -total) %>%
+    dplyr::select(team, team_adj) %>%
+    dplyr::arrange(team_adj)
+  
+}
 
 
 
