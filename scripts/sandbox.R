@@ -1,71 +1,86 @@
 
-library(FBB30x30)
-library(tidyverse)
+  library(FBB30x30)
+  library(tidyverse)
+
+  configs <- setConfigs(nbr_owners = 8,
+                        season_year = 2019)
+
+  pv_2019 <- setPlayerValues(configs)
 
 
-## Make OBP and SLG adjustments
-## Document functions
-## Pass rv, rp etc. up through results
-## Make constraints for all RV values
-
-
-  setConfigs <- function(nbr_owners = 8,
-                       season_year = 2019,
-                       ...){
+#####
   
-  scoring_df <- data.frame(stat = c('r', 'hr', 'rbi', 'so', 'sb', 'slg', 'obp', 'e', 
-                                    'gidp', 'ip', 'k', 'qs', 'whip', 'holds', 'sv'),
-                           class = c(rep('hit', 9), rep('pitch', 6)),
-                           category = c('+','+','+','-','+','+','+','-','-','+','+','+',
-                                        '-','+','+'),
-                           method = c(rep('count', 5), 'ratio', 'ratio', rep('count', 5),
-                                      'ratio', 'count', 'count'))
+  draft_info <- draftSetup(configs,
+                           rankings_list = list(pv_2019))
   
-  roster_df <- tibble(roster = c('C', '1B', '2B', 'SS', '3B', 'LF', 'CF', 'RF', 'OF', 
-                                 'DH', 'MI', 'CI', 'IF', 'Util', 'SP', 'RP', 'P'),
-                      type = c(rep('hit', 14), rep('pitch', 3)),
-                      position = list('C', '1B', '2B', 'SS', '3B', 'LF', 'CF', 'RF',
-                                      c('CF', 'RF', 'LF'), 'DH', c('2B', 'SS'), 
-                                      c('1B', '3B'), c('1B', '2B', '3B', 'SS'),
-                                      c('C', '1B', '2B', '3B', 'SS', 'LF','CF', 'RF', 'DH'),
-                                      'SP', 'RP', c('SP', 'RP')),
-                      count = c(2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 5, 4, 3),
-                      funnel = c(1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 2, 4, 9, 1, 1, 2),
-                      priority = c(1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 3, 4, 1, 1, 2)) %>%
-    dplyr::mutate(population = count * nbr_owners)
   
-  structure(list(season = season_year,
-                 nbr_owners = nbr_owners,
-                 roster = roster_df,
-                 scoring = scoring_df),
-            class = 'fbbConfigs')
+executeDraft <- function(draft_info){
+  
+  picked_df <- draft_info$picked[0, ] 
+  
+  for (pick in draft_info$slot){
+  #for (pick in 1:99){  
+    # Get team
+    i_team <- draft_info$teams[[draft_info$picks[pick]]]
+    
+    # UPdate ranking rankings
+    i_team$rankings <- i_team$rankings %>%
+      dplyr::filter(!player_id %in% picked_df$player_id)
+    
+    # Remove those already picked
+    i_pick <- makePick(i_team$strategy,
+                       i_team,
+                       configs)
+    
+    ## TODO Need to determine which available spots can take this position!!
+    
+    i_spot <- which(i_team$roster$roster %in% i_pick$pos1 &
+                      is.na(i_team$roster$player_id))[1]
+    
+    i_team$roster$player_id[i_spot] <- i_pick$player_id[1]
+    i_team$roster$round[i_spot] <- length(which(!is.na(i_team$roster$player_id)))
+    i_team$roster$pick[i_spot] <- pick
+    i_team$roster$rank[i_spot] <- i_pick$ranking[1]
+    
+    draft_info$teams[[draft_info$picks[pick]]] <- i_team
+    
+    if (pick == 1){
+      picked_df <- data.frame(pick_nbr = 1,
+                              round = 1,
+                              team = 1,
+                              player_id = i_pick$player_id[1])
+    } else {
+      picked_df <- rbind(picked_df,
+                         data.frame(pick_nbr = pick,
+                                    round = length(which(!is.na(i_team$roster$player_id))),
+                                    team = draft_info$picks[pick],
+                                    player_id =  i_pick$player_id[1]))
+    }
+  }
 }
 
-  configs <- setConfigs(season_year = 2019)
-
-
-  projs_ <- list(bat = batprojs_df,
-                pitch = pitchprojs_df)
-  stats_ <- list(bat = batting_df,
-                 pitch = pitching_df,
-                 field = fielding_df)
-
-  relval_df <- setRelValue(projs_, stats_, configs)
-  relval_df
-  rv_df <- relval_df
-
-  posval_df <- setPosValueAdj(projs_,
-                              relval_df,
-                              configs)
+makePick <- function(strategy, team_obj, configs){
   
-  teamval_df <- setTeamValueAdj(projs_,
-                                rv_df,
-                                configs)
+  UseMethod('makePick', strategy)
+}
 
-  
-
-  
+makePick.ba <- function(strategy, team_obj, configs){
  
- 
-
+  avail_pos <- configs$roster %>%
+    dplyr::select(roster, position, priority) %>%
+    tidyr::unnest() %>%
+    dplyr::filter(roster %in% team_obj$roster$roster[is.na(team_obj$roster$player_id)])
+    
+  rankings <- team_obj$rankings %>%
+    dplyr::mutate(pos1 = strsplit(pos, ' | ')) %>%
+    tidyr::unnest() %>%
+    dplyr::filter(pos1 != '|') %>%
+    dplyr::filter(pos1 %in% avail_pos$position) %>%
+    dplyr::arrange(desc(value))
+  
+  pick <- rankings %>% slice(1)
+  
+  rankings %>%
+    dplyr::filter(player_id %in% pick)
+}
 
