@@ -57,7 +57,8 @@ setPlayerValues <- function(configs,
     dplyr::mutate(value = total + team_adj + posx_adj) %>%
     dplyr::arrange(desc(value)) %>%
     dplyr::distinct(player_id, .keep_all = TRUE) %>%
-    dplyr::mutate(ranking = as.numeric(rownames(.)))
+    dplyr::mutate(ranking = as.numeric(rownames(.))) %>%
+    dplyr::filter(team != '')
   
 }
 

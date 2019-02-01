@@ -3,6 +3,7 @@
 
 setConfigs <- function(nbr_owners = 8,
                        season_year = 2019,
+                       team_limit = TRUE,
                        ...){
   
   scoring_df <- data.frame(stat = c('r', 'hr', 'rbi', 'so', 'sb', 'slg', 'obp', 'e', 
@@ -29,7 +30,8 @@ setConfigs <- function(nbr_owners = 8,
   structure(list(season = season_year,
                  nbr_owners = nbr_owners,
                  roster = roster_df,
-                 scoring = scoring_df),
+                 scoring = scoring_df,
+                 team_limit = team_limit),
             class = 'fbbConfigs')
 }
 

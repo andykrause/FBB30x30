@@ -11,6 +11,12 @@ draftSetup <- function(configs,
                               .y = configs$roster$count,
                               .f = rep) %>% unlist()
   
+  # Roster to position mapping
+  r2p_map <- configs$roster %>%
+    dplyr::select(roster, position, priority) %>%
+    tidyr::unnest() %>%
+    dplyr::mutate(filled = FALSE)
+  
   # Set draft order and position
   draft_id <- rep(c(1:configs$nbr_owners, configs$nbr_owners:1),
                   ceiling(length(roster_spots) / 2))
@@ -33,6 +39,7 @@ draftSetup <- function(configs,
     }
     
     teams_[[ti]] <- structure(list(roster = blank_roster,
+                                   r2p_map = r2p_map,
                                    rankings = rankings,
                                    strategy = structure(team_strategy[ti], 
                                                         class = team_strategy[ti]),
@@ -48,6 +55,6 @@ draftSetup <- function(configs,
   structure(list(picks = draft_id,
                  slot = draft_pos,
                  teams = teams_,
-                 picked = pick_df),
+                 picked = pick_df[0, ]),
             class = 'draftInfo')
 }
