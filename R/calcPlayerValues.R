@@ -27,7 +27,8 @@ setPlayerValues <- function(configs,
   if (verbose >= 1) message('Calculating position adjustments.\n')
   posval_df <- setPosValueAdj(projs_,
                               relval_df,
-                              configs)
+                              configs,
+                              verbose = verbose)
   
   ## Build Projs and stats data
   if (verbose >= 1) message('Calculating team adjustments.\n')
@@ -38,7 +39,7 @@ setPlayerValues <- function(configs,
   ## Build Projs and stats data
   if (verbose >= 1) message('Combining, cleaning and re-ordering.\n')
   
-  projs_$bat %>%
+  structure(projs_$bat %>%
     dplyr::select(player_id, player, team, year, pos) %>%
     dplyr::filter(year == configs$season) %>%
     dplyr::bind_rows(., projs_$pitch %>%
@@ -58,7 +59,12 @@ setPlayerValues <- function(configs,
     dplyr::arrange(desc(value)) %>%
     dplyr::distinct(player_id, .keep_all = TRUE) %>%
     dplyr::mutate(ranking = as.numeric(rownames(.))) %>%
-    dplyr::filter(team != '')
+    dplyr::filter(team != '') %>%
+    dplyr::select(player_id, player, team, year, pos, ranking),
+    class = c('draftRankings', 'tbl_df', 'tbl', 'data.frame'),
+    pos_value = posval_df,
+    roster_value = NULL,
+    team_value = teamval_df)
   
 }
 
@@ -352,7 +358,8 @@ setPitchingRelValue <- function(projs_df,
 
 setPosValueAdj <- function(projs_,
                            rv_df,
-                           configs){  
+                           configs,
+                           verbose = 1){  
   
   # Combine into a single data.frame unnested by positions
   
@@ -374,13 +381,15 @@ setPosValueAdj <- function(projs_,
   hitp1_df <- assignPositionPriority(type = 'hit',
                                      priority = 1,
                                      projs_udf = projs_udf,
-                                     configs = configs)
+                                     configs = configs,
+                                     verbose = verbose)
   
   hitp2_df <- assignPositionPriority(type = 'hit',
                                      priority = 2,
                                      projs_udf = projs_udf,
                                      used_ids = hitp1_df$player_id,
-                                     configs = configs)
+                                     configs = configs,
+                                     verbose = verbose)
   
   hip_df <- dplyr::bind_rows(hitp1_df, hitp2_df)
   
@@ -388,7 +397,8 @@ setPosValueAdj <- function(projs_,
                                      priority = 3,
                                      projs_udf = projs_udf,
                                      used_ids = hip_df$player_id,
-                                     configs = configs)
+                                     configs = configs,
+                                     verbose = verbose)
   
   hip_df <- dplyr::bind_rows(hip_df, hitp3_df)
   
@@ -396,7 +406,8 @@ setPosValueAdj <- function(projs_,
                                      priority = 4,
                                      projs_udf = projs_udf,
                                      used_ids = hip_df$player_id,
-                                     configs = configs)
+                                     configs = configs,
+                                     verbose = verbose)
   
   hip_df <- dplyr::bind_rows(hip_df, hitp4_df)
   
@@ -405,25 +416,29 @@ setPosValueAdj <- function(projs_,
   pitp1_df <- assignPositionPriority(type = 'pitch',
                                      priority = 1,
                                      projs_udf = projs_udf,
-                                     configs = configs)
+                                     configs = configs,
+                                     verbose = verbose)
   
   pitp2_df <- assignPositionPriority(type = 'pitch',
                                      priority = 2,
                                      projs_udf = projs_udf,
                                      used_ids = pitp1_df$player_id,
-                                     configs = configs)
+                                     configs = configs,
+                                     verbose = verbose)
   
   pip_df <- dplyr::bind_rows(pitp1_df, pitp2_df)
   
   all_df <- dplyr::bind_rows(hip_df, pip_df)
   
-  all_df %>%
+  structure(all_df %>%
     dplyr::arrange(total) %>%
     dplyr::group_by(posx) %>%
     dplyr::slice(1) %>%
     dplyr::select(posx, priority, posx_adj = total) %>%
     dplyr::arrange(priority, posx) %>%
-    dplyr::mutate(posx_adj = -posx_adj)
+    dplyr::mutate(posx_adj = -posx_adj) %>%
+    dplyr::ungroup(),
+    class = c('posValue', 'tbl_df', 'tbl', 'data.frame'))
   
   
 }
@@ -434,7 +449,8 @@ assignPositionPriority <- function(type,
                                    priority,
                                    projs_udf,
                                    used_ids = NULL,
-                                   configs){
+                                   configs,
+                                   verbose = 1){
   
   # Extract roster info
   ros_info <- configs$roster[configs$roster$priority == priority & 
@@ -453,7 +469,8 @@ assignPositionPriority <- function(type,
       dplyr::filter(!player_id %in% used_ids) %>%
       dplyr::left_join(., pos_df %>%
                          select(pos1 = position,
-                                posx = roster))
+                                posx = roster),
+                       by = 'pos1')
   } else {
     player_df$posx <- player_df$pos1
   }
@@ -466,6 +483,8 @@ assignPositionPriority <- function(type,
   for (i in 1:nrow(ros_info)){
     
     i_pos <- unlist(pos_df$position[pos_df$roster == ros_info$roster[i]])
+    
+    if (verbose >= 2) message('---- Valueing: ', paste0(i_pos, collapse = ', '), '-----')
     
     p_[[i]] <- player_df %>%
       dplyr::filter(pos1 %in% i_pos) %>%
@@ -483,7 +502,8 @@ assignPositionPriority <- function(type,
   
   assign_df <- positionAssign(player_df,
                               configs,
-                              priority)
+                              priority,
+                              verbose = verbose)
   
   assign_df
   
@@ -493,7 +513,8 @@ assignPositionPriority <- function(type,
 
 positionAssign <- function(player_df, 
                            configs,
-                           priority){
+                           priority,
+                           verbose = 1){
   
   # Setup
   go <- 1
@@ -504,7 +525,7 @@ positionAssign <- function(player_df,
   while (go == 1){
     
     p_df <- player_df[1, ]
-    cat(p_df$player, '...\n')
+    if (verbose >= 3) cat(p_df$player, '...\n')
     roster_pop <- configs$roster$population[which(configs$roster$roster == p_df$posx)]  
     
     if (is.null(pa_[[p_df$posx]])){
@@ -661,13 +682,14 @@ setTeamValueAdj <- function(projs_,
                        dplyr::select(-player), 
                      by='player_id')
   
-  projs_udf %>%
+  structure(projs_udf %>%
     dplyr::group_by(team) %>%
     dplyr::arrange(desc(total)) %>%
     dplyr::slice(configs$nbr_owner) %>%
     dplyr::mutate(team_adj = -total) %>%
     dplyr::select(team, team_adj) %>%
-    dplyr::arrange(team_adj)
+    dplyr::arrange(team_adj),
+    class = c('teamValue', 'tbl_df', 'tbl', 'data.frame'))
   
 }
 
