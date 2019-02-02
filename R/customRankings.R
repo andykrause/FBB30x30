@@ -25,6 +25,28 @@ customRankings <- function(type,
 }
 
 #' 
+#' Fantasy pros (fp)
+#' 
+#' Custom rankings from fantasypros.com
+#' 
+#' @param type Type of custom ranking system to use ('xxx' for now)
+#' @param configs An `fbbConfigs` object
+#' @param verbose [1] The level of reponse statements you'd like (higher = more)
+#' @return A custom ranking set
+#' @method customRankings fp
+#' @export
+
+customRankings.fp <- function(type,
+                              configs, 
+                              verbose = 1){
+  
+  get(data(rankings_df)) %>%
+    dplyr::filter(year == configs$season) %>%
+    dplyr::filter(team != '')
+  
+}
+
+#' 
 #' Relative rotisserie values (rrv)
 #' 
 #' Custom rankings that takes into account relative rotisserie point values
