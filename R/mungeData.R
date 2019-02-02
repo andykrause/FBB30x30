@@ -147,10 +147,10 @@ prepMatchDup <- function(match_df,
   imd$pos[imd$pos %in% c('RP', 'SP', 'SP | RP', 'SP,RP')] <- "P"
   
   # Get retro ids
-  retros <- dup_df$retro_id[dup_df$full == imd$player[i]]
+  retros <- dup_df$retro_id[dup_df$full == imd$player]
   res_df <- purrr::map(.x = retros,
                        .f = scrapeRetroAnnualData,
-                       year = pmin(imd$year[i], 2018)) %>%
+                       year = pmin(imd$year, 2018)) %>%
     purrr::map(., .f = function(x){
       data.frame(player_id = x$fielding$playerid,
                  team = x$fielding$team,

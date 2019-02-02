@@ -181,7 +181,7 @@ getBRStats.fielding <- function(type, year){
 #' @param year year of stats
 #' @return Stats for that year
 #' @importFrom dplyr select mutate
-#' @method getBRStats fielding
+#' @method getBRStats batting
 #' @export
 
 getBRStats.batting <- function(type, year){
@@ -206,7 +206,7 @@ getBRStats.batting <- function(type, year){
 #' @param year year of stats
 #' @return Stats for that year
 #' @importFrom dplyr select mutate
-#' @method getBRStats fielding
+#' @method getBRStats pitching
 #' @export
 
 getBRStats.pitching <- function(type, year){

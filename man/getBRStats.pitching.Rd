@@ -4,7 +4,7 @@
 \alias{getBRStats.pitching}
 \title{Wrapper for getting basic BR pitching stats}
 \usage{
-\method{getBRStats}{fielding}(type, year)
+\method{getBRStats}{pitching}(type, year)
 }
 \arguments{
 \item{type}{('fielding', 'pitching' or 'batting')}
