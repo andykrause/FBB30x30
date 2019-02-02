@@ -163,6 +163,10 @@
                     year = 2014,
                     player = as.character(player),
                     team = as.character(team)) %>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       dplyr::select(-c(cs, type)) %>%
       addPlayerID(., players_df = players_df) 
       
@@ -187,6 +191,10 @@
       dplyr::rename(so = k, 
                     ops = obps) %>%
       dplyr::select(-c(cs, g, al.nl.., mixed.., name))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     gidp_df <- projectGIDP(batting_df, hp_2015, proj_year = 2015)
@@ -209,6 +217,10 @@
                     year = 2016,
                     player = as.character(player),
                     team = as.character(team)) %>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     gidp_df <- projectGIDP(batting_df, hp_2016, proj_year = 2016)
@@ -228,6 +240,10 @@
                     pos = gsub('/', ' | ', pos),
                     player = as.character(player),
                     team = as.character(team)) %>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     gidp_df <- projectGIDP(batting_df, hp_2017, proj_year = 2017)
@@ -246,6 +262,10 @@
                     pos = gsub('/', ' | ', pos),
                     player = as.character(player),
                     team = as.character(team))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     gidp_df <- projectGIDP(batting_df, hp_2018, proj_year = 2018)
@@ -265,6 +285,10 @@
                     pos = gsub('/', ' | ', pos),
                     player = as.character(player),
                     team = as.character(team)) %>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     gidp_df <- projectGIDP(batting_df, hp_2019, proj_year = 2019)
@@ -277,7 +301,10 @@
     # Combine
     batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018, hp_2019) %>%
       tibble::as.tibble()%>%
-      dplyr::select(player_id, player, team, year, tidyselect::everything())
+      dplyr::select(player_id, player, team, year, pos, pos_list, 
+                    tidyselect::everything())%>%
+      structure(., class = c('projections', 'batting', 'tbl_df', 'tbl', 'data.frame'))
+    
 
    ## Pitchers
 
@@ -293,6 +320,10 @@
                     player = as.character(player),
                     team = as.character(team)) %>%
       dplyr::select(-c(hd, hr, type, bs))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     qs_df <- projectQS(pitching_df, pp_2014, proj_year = 2014)
@@ -317,6 +348,10 @@
                     player = as.character(player),
                     team = as.character(team)) %>%
       dplyr::select(-c(al.nl.., mixed.., sho, name, gsp))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     qs_df <- projectQS(pitching_df, pp_2015, proj_year = 2015)
@@ -337,6 +372,10 @@
                     player = as.character(player),
                     team = as.character(team)) %>%
       dplyr::select(-c(hr))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     qs_df <- projectQS(pitching_df, pp_2016, proj_year = 2016)
@@ -356,6 +395,10 @@
                     player = as.character(player),
                     team = as.character(team)) %>%
       dplyr::select(-c(hr))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     qs_df <- projectQS(pitching_df, pp_2017, proj_year = 2017)
@@ -375,6 +418,10 @@
                     player = as.character(player),
                     team = as.character(team)) %>%
       dplyr::select(-c(hr))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     qs_df <- projectQS(pitching_df, pp_2018, proj_year = 2018)
@@ -394,6 +441,10 @@
                     player = as.character(player),
                     team = as.character(team)) %>%
       dplyr::select(-c(hr))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
       addPlayerID(., players_df = players_df) 
     
     qs_df <- projectQS(pitching_df, pp_2019, proj_year = 2019)
@@ -406,7 +457,9 @@
     # Combine Al
     pitchprojs_df <- rbind(pp_2014, pp_2015, pp_2016, pp_2017, pp_2018, pp_2019) %>%
       tibble::as.tibble() %>%
-      dplyr::select(player_id, player, team, year, tidyselect::everything())
+      dplyr::select(player_id, player, team, year, pos, pos_list, 
+                    tidyselect::everything()) %>%
+      structure(., class = c('projections', 'pitching', 'tbl_df', 'tbl', 'data.frame'))
 
   ## Save
     
@@ -428,10 +481,10 @@
   # 2016
   names(rank_2016) <- tolower(names(rank_2016))
   rank_2016 <- rank_2016 %>% 
-    dplyr::rename(avg=ave,
-                  std.dev=stdev,
-                  rank=ecr,
-                  player=name) %>%
+    dplyr::rename(avg = ave,
+                  st_dev = stdev,
+                  ranking = ecr,
+                  player = name) %>%
     dplyr::mutate(pos = gsub(',', '/', pos),
                   pos = gsub('/', ' | ', pos),
                   year = 2016,
@@ -459,9 +512,8 @@
   rank_2017$team <- team
   rank_2017$pos <- substr(pos, 2, 100)
   rank_2017 <- rank_2017 %>% 
-    dplyr::rename(rank=ranking,
-                  std.dev=stdev,
-                  avg=average) %>%
+    dplyr::rename(st_dev = stdev,
+                  avg = average) %>%
     tibble::as.tibble() %>%
     dplyr::select(player, team, pos, tidyselect::everything())
   rank_2017$adp[is.na(rank_2017$adp)] <- ceiling(rank_2017$avg[is.na(rank_2017$adp)])
@@ -469,7 +521,9 @@
   # 2018
   names(rank_2018) <- tolower(names(rank_2018))
   rank_2018 <- rank_2018 %>% 
-    dplyr::rename(pos = positions) %>%
+    dplyr::rename(pos = positions,
+                  ranking = rank,
+                  st_dev = std.dev) %>%
     dplyr::mutate(pos = gsub(',', '/', pos),
                   pos = gsub('/', ' | ', pos),
                   year = 2018,
@@ -482,7 +536,9 @@
   # 2019
   names(rank_2019) <- tolower(names(rank_2019))
   rank_2019 <- rank_2019 %>% 
-    dplyr::rename(pos = positions) %>%
+    dplyr::rename(pos = positions,
+                  ranking = rank,
+                  st_dev = std.dev) %>%
     dplyr::mutate(pos = gsub(',', '/', pos),
                   pos = gsub('/', ' | ', pos),
                   year = 2019,
@@ -494,16 +550,27 @@
   ## TEMP
   rank_2019$adp <- 0
   rank_2019$adp[is.na(rank_2019$adp)] <- ceiling(rank_2019$avg[is.na(rank_2019$adp)])
-  
-  
+
   # Combine All
   rankings_df <- rbind(rank_2016, rank_2017, rank_2018, rank_2019) %>%
     tibble::as.tibble() %>%
-    dplyr::select(player, team, pos, year, rank, tidyselect::everything())
+    dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+    tidyr::unnest() %>%
+    dplyr::filter(pos_list != '|') %>%
+    tidyr::nest(pos_list, .key = 'pos_list') %>%
+    dplyr::select(player, team, pos, year, ranking, tidyselect::everything())
     
   rankings_df <- rankings_df %>%
     addPlayerID(., players_df) %>%
-    dplyr::select(player_id, year, tidyselect::everything())
+    dplyr::select(player_id, player, year, team, pos, pos_list, ranking,
+                  tidyselect::everything())
+  
+  rankings_df <- structure(rankings_df,
+                           class = c('draftRankings', 'tbl_df', 'tbl', 'data.frame'),
+                           source = 'fantasy_pros',
+                           team_value = NULL,
+                           pos_value = NULL,
+                           roster_value = NULL)
   
   usethis::use_data(rankings_df, overwrite=TRUE) 
   

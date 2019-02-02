@@ -5,7 +5,7 @@
   configs <- setConfigs(nbr_owners = 8,
                         season_year = 2019)
 
-  pv_2019 <- setPlayerValues(configs)
+  pv_2019 <- setPlayerValues(configs, verbose = 9)
 
 
 #####
