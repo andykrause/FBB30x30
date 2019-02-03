@@ -230,6 +230,7 @@ makePick <- function(strategy, team_obj, configs){
   UseMethod('makePick', strategy)
 }
 
+#' @method makePick ba
 #' @export
 
 makePick.ba <- function(strategy, team_obj, configs){
@@ -251,3 +252,29 @@ makePick.ba <- function(strategy, team_obj, configs){
   
 }
 
+
+#' @method makePick ba5
+#' @export
+
+makePick.ba5 <- function(strategy, team_obj, configs){
+  
+  # Get available positions
+  avail_pos <- configs$roster %>%
+    dplyr::select(roster, position, priority) %>%
+    tidyr::unnest() %>%
+    dplyr::filter(roster %in% team_obj$roster$roster[is.na(team_obj$roster$player_id)])
+  
+  # Sample from top possible 5 picks
+  set.seed(team_obj$rankings$ranking[1])
+  random_pick <- sample(unlist(lapply(1:5, function(x) rep(6-x,x))),1)
+  
+  # Make pick and return
+  structure(team_obj$rankings %>%
+              tidyr::unnest() %>%
+              dplyr::filter(roster %in% avail_pos$roster) %>%
+              dplyr::arrange(ranking, priority) %>%
+              dplyr::slice(randon_pick) %>%
+              dplyr::select(player_id, player, team, roster, ranking),
+            class = c('draftPick', 'tbl_df', 'tbl', 'data.frame'))
+  
+}

@@ -80,13 +80,60 @@ customRankings.rrv <- function(type,
                                         stats_ = stats_, 
                                         configs = configs)
   
+  # if (verbose >= 1) message('Adjusting for team quality)
+  #teamadj_df <- cr
+  
   ## Convert to ranking and return
   rrvToRankings(rrv_obj = rrval_df,
                 projs_ = projs_,
                 configs = configs)
 }
 
+
+#' 
+#' Relative rotisserie values (rrv)
+#' 
+#' Custom rankings that takes into account relative rotisserie point values
+#' 
+#' @param type Type of custom ranking system to use ('xxx' for now)
+#' @param configs An `fbbConfigs` object
+#' @param verbose [1] The level of reponse statements you'd like (higher = more)
+#' @return A custom ranking set
+#' @method customRankings rrvt
+#' @export
+
+customRankings.rrvt <- function(type,
+                                configs,
+                                verbose = 1){
   
+  ## Build Projs and stats data
+  if (verbose >= 1) message('Building raw data objects.\n')
+  
+  # Projections
+  projs_ <- list(bat = get(data(batprojs_df)),
+                 pitch = get(data(pitchprojs_df)))
+  
+  # Stats
+  stats_ <- list(bat = get(data(batting_df)),
+                 pitch = get(data(pitching_df)),
+                 field = get(data(fielding_df)))
+  
+  ## Build Projs and stats data
+  if (verbose >= 1) message('Calculating relative player values.\n')
+  rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
+                                        stats_ = stats_, 
+                                        configs = configs)
+  
+  # if (verbose >= 1) message('Adjusting for team quality)
+  rrvt_df <- crRelativeTeamAdj(rrv_df = rrval_df,
+                               configs = configs)
+
+  ## Convert to ranking and return
+  rrvToRankings(rrv_obj = rrvt_df,
+                projs_ = projs_,
+                configs = configs)
+}
+
 # 
 #   ## Build Projs and stats data
 #   if (verbose >= 1) message('Calculating position adjustments.\n')
@@ -635,3 +682,39 @@ rrvToRankings <- function(rrv_obj,
             pos_values = list(...)$pv_obj,
             roster_values = list(...)$rv_obj)
 }
+
+
+#' @export
+
+crRelativeTeamAdj <- function(rrv_df,
+                              configs){  
+  
+  projs_udf <- get(data(batprojs_df)) %>%
+    dplyr::select(player_id, player, team, year, pos) %>%
+    dplyr::filter(year == configs$season) %>%
+    dplyr::bind_rows(., get(data(pitchprojs_df)) %>%
+                       dplyr::select(player_id, player, team, year, pos) %>%
+                       dplyr::filter(year == configs$season)) %>%
+    dplyr::left_join(., rrv_df %>%
+                       dplyr::select(-player), 
+                     by='player_id') %>%
+    dplyr::filter(team != '')
+  
+  teamadj_df <- projs_udf %>%
+    dplyr::group_by(team) %>%
+    dplyr::arrange(desc(rrv)) %>%
+    dplyr::slice(configs$nbr_owner) %>%
+    dplyr::mutate(team_adj = -rrv) %>%
+    dplyr::select(team, team_adj) %>%
+    dplyr::arrange(team_adj)
+
+  projs_udf %>%
+    dplyr::left_join(., teamadj_df, by = 'team') %>%
+    dplyr::rename(rrv_orig = rrv) %>%
+    dplyr::mutate(rrv = rrv_orig + team_adj) %>%
+    dplyr::select(player_id, player, rrv, team_adj, rrv_orig)
+    
+}
+
+
+

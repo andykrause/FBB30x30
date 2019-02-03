@@ -33,19 +33,23 @@ multiFBBSimulations <- function(sims,
                           configs = configs) %>%
     purrr::set_names(rankings)
   
+  if (is.null(strategies)) strategies <- 'ba'
+
   # Simulate Seasons
   for (ss in 1:length(sim_objs)){
     
     if (verbose >= 1) message('Simulation: ', ss)
     
-    # Set Randomized rankings types
+    # Set Randomized rankings and strategy types
     set.seed(ss)
     rankings_types <- sample(rankings, nbr_owners, replace = TRUE)
+    strategy_types <- sample(strategies, nbr_owners, replace = TRUE)
     
     # Update Configs 
     configs_ss <- setConfigs(nbr_owners = nbr_owners,
                              season_year = season_year,
-                             rankings_types = rankings_types)
+                             rankings_types = rankings_types,
+                             draft_strategies = strategy_types)
     
     # Run simulation
     sim_objs[[ss]] <- simulateFBB(configs = configs_ss, 
