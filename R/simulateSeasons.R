@@ -48,7 +48,7 @@ multiFBBSimulations <- function(sims,
                              rankings_types = rankings_types)
     
     # Run simulation
-    sim_objs[[ss]] <- simulateFBB(configs = configs_i, 
+    sim_objs[[ss]] <- simulateFBB(configs = configs_ss, 
                                   verbose = 1, 
                                   rankings_ = rankings_)
   }
@@ -56,7 +56,7 @@ multiFBBSimulations <- function(sims,
   # sim_summ <- analyzeSimulations(sim_objs)
   structure(list(raw = sim_objs,
                  summary = analyzeSimulations(sim_objs)),
-            'multiSim')
+            class = 'multiSim')
 }
 
 #' 
