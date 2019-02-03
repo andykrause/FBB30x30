@@ -1,6 +1,13 @@
+#*****************************************************************************************
+#
+#   Draft Teams
+#
+#*****************************************************************************************
+
+
 
 #' @export
-
+#' 
 draftSetup <- function(configs,
                        rankings_list,
                        team_strategy = rep('ba', configs$nbr_owners),
@@ -75,6 +82,43 @@ draftSetup <- function(configs,
 
 #' @export
 
+draftTeams <- function(configs,
+                       verbose = 1,
+                       ...){
+
+  rankings_list <- buildRankingsList(configs,
+                                    verbose = verbose,
+                                    ...)
+  
+  draft_info <- draftSetup(configs,
+                           rankings_list = rankings_list)
+  
+  executeDraft(draft_info = draft_info,
+               verbose = verbose)
+}
+
+#' @export
+
+buildRankingsList <- function(configs,
+                              verbose = 1,
+                              ...){
+  
+  if ('rankings_' %in% names(list(...))){
+    rankings_ <- list(...)$rankings_
+  } else {
+    rankings_ <- purrr::map(.x = unique(configs$behavior$rankings),
+                            .f = customRankings,
+                            configs = configs) %>%
+      purrr::set_names(unique(configs$behavior$rankings))
+  }
+  rankings_[configs$behavior$rankings]
+  
+}
+
+
+
+#' @export
+
 executeDraft <- function(draft_info,
                          verbose = 1){
   
@@ -103,6 +147,9 @@ executeDraft <- function(draft_info,
     i_pick <- makePick(i_team$strategy,
                        i_team,
                        configs)
+    
+    # Hack for when no pick is maed
+    if (nrow(i_pick) == 0) i_pick <- draft_info$picked[nrow(draft_info$picked), ]
     
     # Find roster spot
     i_spot <- which(i_team$roster$roster == i_pick$roster & 

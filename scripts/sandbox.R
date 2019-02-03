@@ -2,22 +2,20 @@
   library(FBB30x30)
   library(tidyverse)
 
+  if(F){
   configs <- setConfigs(nbr_owners = 8,
-                        season_year = 2019)
+                        season_year = 2018,
+                        rankings = c('rrv', rep('fp', 7)))
 
-  rank_rrv <- customRankings('rrv', configs)
-  rank_fp <- customRankings('fp', configs)
+  ms_ <- multiFBBSimulations(sims = 2)
   
+  ## Add configs to simulations
   
+
   
-
-
-
+  summary(lm(points ~ ds + as.factor(team), data = sst))
+}
+  
 #####
-  
-  draft_info <- draftSetup(configs,
-                           rankings_list = list(fp_2019, rrv_2019, rrv_2019, rrv_2019, 
-                                                rrv_2019, rrv_2019, rrv_2019, rrv_2019))
-  
-  draft_obj <- executeDraft(draft_info, verbose = 2)
+
   

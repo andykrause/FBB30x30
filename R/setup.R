@@ -3,8 +3,15 @@
 
 setConfigs <- function(nbr_owners = 8,
                        season_year = 2019,
+                       rankings_types = rep('fp', length(nbr_owners)),
+                       draft_strategies = rep('ba', length(nbr_owners)),
                        team_limit = TRUE,
                        ...){
+  
+  behavior_df <- data.frame(team = 1:nbr_owners,
+                            rankings = rankings_types,
+                            strategy = draft_strategies,
+                            stringsAsFactors = FALSE)
   
   scoring_df <- data.frame(stat = c('r', 'hr', 'rbi', 'so', 'sb', 'slg', 'obp', 'e', 
                                     'gidp', 'ip', 'k', 'qs', 'whip', 'holds', 'sv'),
@@ -29,6 +36,7 @@ setConfigs <- function(nbr_owners = 8,
   
   structure(list(season = season_year,
                  nbr_owners = nbr_owners,
+                 behavior = behavior_df,
                  roster = roster_df,
                  scoring = scoring_df,
                  team_limit = team_limit),
