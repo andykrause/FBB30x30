@@ -572,36 +572,36 @@ adjustSlg <- function(team_df){
 #'   } 
 #' }
 
-
-#' @export
-
-setTeamValueAdj <- function(projs_,
-                            rv_df,
-                            configs){  
-  
-  projs_udf <- projs_$bat %>%
-    dplyr::select(player_id, player, team, year, pos) %>%
-    dplyr::filter(year == configs$season) %>%
-    dplyr::bind_rows(., projs_$pitch %>%
-                       dplyr::select(player_id, player, team, year, pos) %>%
-                       dplyr::filter(year == configs$season)) %>%
-    dplyr::left_join(., rv_df %>%
-                       dplyr::select(-player), 
-                     by='player_id')
-  
-  projs_udf %>%
-    dplyr::group_by(team) %>%
-    dplyr::arrange(desc(total)) %>%
-    dplyr::slice(configs$nbr_owner) %>%
-    dplyr::mutate(team_adj = -total) %>%
-    dplyr::select(team, team_adj) %>%
-    dplyr::arrange(team_adj)
-  
-}
-
-
-
-
+#' 
+#' #' @export
+#' 
+#' setTeamValueAdj <- function(projs_,
+#'                             rv_df,
+#'                             configs){  
+#'   
+#'   projs_udf <- projs_$bat %>%
+#'     dplyr::select(player_id, player, team, year, pos) %>%
+#'     dplyr::filter(year == configs$season) %>%
+#'     dplyr::bind_rows(., projs_$pitch %>%
+#'                        dplyr::select(player_id, player, team, year, pos) %>%
+#'                        dplyr::filter(year == configs$season)) %>%
+#'     dplyr::left_join(., rv_df %>%
+#'                        dplyr::select(-player), 
+#'                      by='player_id')
+#'   
+#'   projs_udf %>%
+#'     dplyr::group_by(team) %>%
+#'     dplyr::arrange(desc(total)) %>%
+#'     dplyr::slice(configs$nbr_owner) %>%
+#'     dplyr::mutate(team_adj = -total) %>%
+#'     dplyr::select(team, team_adj) %>%
+#'     dplyr::arrange(team_adj)
+#'   
+#' }
+#' 
+#' 
+#' 
+#' 
 
 
 

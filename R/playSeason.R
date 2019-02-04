@@ -48,8 +48,8 @@ playTeamSeason <- function(team_df,
     dplyr::filter(!roster %in% c('SP', 'RP', 'P')) %>%
     dplyr::left_join(bat_stats,
                      by = 'player_id') %>%
-    dplyr::mutate(obp = obp * (pa/(sum(pa))),
-                  slg = slg * (ab/(sum(ab)))) %>%
+    dplyr::mutate(obp = obp * (pa/(sum(pa, na.rm=T))),
+                  slg = slg * (ab/(sum(ab, na.rm=T)))) %>%
     dplyr::summarize_at(., as.character(bat_cats$stat), sum, na.rm=TRUE)
   
   # calc pitching    
@@ -58,7 +58,7 @@ playTeamSeason <- function(team_df,
     dplyr::left_join(pitch_stats,
                      by = 'player_id') %>%
     dplyr::filter(!is.na(g)) %>%
-    dplyr::mutate(whip = whip * (ip/(sum(ip)))) %>%
+    dplyr::mutate(whip = whip * (ip/(sum(ip, na.rm=TRUE)))) %>%
     dplyr::summarize_at(., as.character(pitch_cats$stat), sum, na.rm=TRUE)
   
   cbind(team_bat, team_pitch)
