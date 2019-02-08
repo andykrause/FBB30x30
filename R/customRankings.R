@@ -361,8 +361,8 @@ crRelativeBattingValue <- function(projs_df,
                            configs = configs) %>%
     as.data.frame() %>%
     tibble::as.tibble() %>%
-    dplyr::mutate(obp = obp / bat_per_team * (proj_df$ab/500),
-                  slg = slg / bat_per_team * (proj_df$ab/500))
+    dplyr::mutate(obp = obp * proj_df$ab / (bat_per_team * 550),
+                  slg = slg * proj_df$ab * 1.1 / (bat_per_team * 660))
   bystat_df$total = rowSums(bystat_df)
   
   # Add to players
@@ -491,6 +491,8 @@ crRelativePitchingValue <- function(projs_df,
     as.data.frame()
   
   ## Calculate player value above replacement
+  projspip <- proj_df$ip[proj_df$SP] 
+  projspip <- projspip[!is.na(projspip)]
   
   sbystat_df <- purrr::map2(.x = proj_df[proj_df$SP, c('ip','k','qs', 'whip')],
                             .y = c('ip','k','qs', 'whip'),
@@ -501,8 +503,11 @@ crRelativePitchingValue <- function(projs_df,
     as.data.frame() %>%
     as.tibble() %>%
     dplyr::filter(!is.na(ip)) %>%
-    dplyr::mutate(whip = whip / 12* (ip/200))
+    dplyr::mutate(whip = whip * projspip / (7 * 200 + 5 * 50))
   sbystat_df$total = rowSums(sbystat_df)
+  
+  projrpip <- proj_df$ip[!proj_df$SP] 
+  projrpip <- projspip[!is.na(projrpip)]
   
   rbystat_df <- purrr::map2(.x = proj_df[!proj_df$SP, c('holds', 'ip', 'k','sv', 'whip')],
                             .y = c('holds', 'ip', 'k','sv', 'whip'),
@@ -513,7 +518,7 @@ crRelativePitchingValue <- function(projs_df,
     as.data.frame() %>%
     as.tibble() %>%
     dplyr::filter(!is.na(ip)) %>%
-    dplyr::mutate(whip = whip / 12 * (ip/200))
+    dplyr::mutate(whip = whip * projrpip / (7 * 200 + 5 * 50))
   rbystat_df$total = rowSums(rbystat_df)
   
   # Add to players
@@ -557,7 +562,8 @@ crExpertRVCorrections <- function(type,
   if (type == 'hit'){
     rv_df$hr <- ifelse(rv_df$hr < 8, 8, rv_df$hr)
     rv_df$hr <- ifelse(rv_df$hr > 16, 16, rv_df$hr)
-    rv_df$slg <- ifelse(rv_df$slg < .004, .004, rv_df$slg)
+    rv_df$slg <- ifelse(rv_df$slg < .0045, .0045, rv_df$slg)
+    rv_df$slg <- ifelse(rv_df$obp < .0025, .0025, rv_df$slg)
     rv_df$gidp <- ifelse(rv_df$gidp < 4, 4, rv_df$gidp)
     rv_df$sb <- ifelse(rv_df$sb > 25, 25, rv_df$sb)
     rv_df$sb <- ifelse(rv_df$sb < 10, 10, rv_df$sb)
@@ -566,11 +572,17 @@ crExpertRVCorrections <- function(type,
   }
   if (type == 'pitch'){
     rv_df$qs <- ifelse(rv_df$qs < 4, 4, rv_df$qs)
+    rv_df$qs <- ifelse(rv_df$qs > 8, 8, rv_df$qs)
     rv_df$ip <- ifelse(rv_df$ip < 25, 25, rv_df$ip)
+    rv_df$ip <- ifelse(rv_df$ip > 50, 50, rv_df$ip)
     rv_df$k <- ifelse(rv_df$k < 35, 35, rv_df$k)
     rv_df$whip <- ifelse(rv_df$whip < .01, .01, rv_df$whip)
     rv_df$holds <- ifelse(rv_df$holds < 6, 6, rv_df$holds)
-    rv_df$sv <- ifelse(rv_df$sv < 10, 10, rv_df$sv)
+    rv_df$sv <- ifelse(rv_df$sv < 7, 7, rv_df$sv)
+    rv_df$sv <- ifelse(rv_df$sv > 12, 12, rv_df$sv)
+    rv_df$sv <- ifelse(rv_df$holds < 4, 4, rv_df$sv)
+    rv_df$sv <- ifelse(rv_df$holds < 8, 8, rv_df$sv)
+    
   }
   rv_df
 }

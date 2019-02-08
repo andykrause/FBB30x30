@@ -22,6 +22,9 @@ playSeason <- function(draft_obj,
   standings_df <- points_df %>%
     dplyr::mutate_at(., vars(-team), rank)
   
+  reverse <- as.character(configs$scoring$stat[configs$scoring$category == '-'])
+  for (rr in reverse) standings_df[[rr]] <- (configs$nbr_owner + 1) - standings_df[[rr]]
+  
   total_df <- data.frame(team = standings_df$team,
                          points = rowSums(standings_df) - standings_df$team)
   
