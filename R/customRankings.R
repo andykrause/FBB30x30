@@ -4,6 +4,8 @@
 #
 #*****************************************************************************************
 
+### Main Function ------------------------------------------------------------------------
+
 #' 
 #' Generic method for custom ranking processes
 #' 
@@ -12,16 +14,16 @@
 #' @param type Type of custom ranking system to use ('rrv' for now)
 #' @param configs An `fbbConfigs` object
 #' @param verbose [1] The level of reponse statements you'd like (higher = more)
+#' @param ... Additional arguments
 #' @return A custom ranking set
 #' @export
 
 customRankings <- function(type,
                            configs,
-                           verbose = 1){
+                           ...){
   
   type <- structure(type, class = type)
   UseMethod('customRankings', type)  
- 
 }
 
 #' 
@@ -29,21 +31,27 @@ customRankings <- function(type,
 #' 
 #' Custom rankings from fantasypros.com
 #' 
-#' @param type Type of custom ranking system to use ('xxx' for now)
+#' @param type Type of custom ranking system to use ('fp')
 #' @param configs An `fbbConfigs` object
 #' @param verbose [1] The level of reponse statements you'd like (higher = more)
+#' @param ... Additional argumenss
+#' @importFrom dplyr filter
 #' @return A custom ranking set
 #' @method customRankings fp
 #' @export
 
 customRankings.fp <- function(type,
                               configs, 
-                              verbose = 1){
+                              ...){
   
+  vmc('Custom Ranking by Fantasy Pros', ...)
   get(data(rankings_df)) %>%
     dplyr::filter(year == configs$season) %>%
-    dplyr::filter(team != '')
-  
+    dplyr::filter(team != '') %>%
+    structure(., 
+              class = 'customRanking',
+              year = configs$season,
+              source = 'fp')
 }
 
 #' 
@@ -53,19 +61,18 @@ customRankings.fp <- function(type,
 #' 
 #' @param type Type of custom ranking system to use ('xxx' for now)
 #' @param configs An `fbbConfigs` object
-#' @param verbose [1] The level of reponse statements you'd like (higher = more)
 #' @return A custom ranking set
 #' @method customRankings rrv
 #' @export
 
 customRankings.rrv <- function(type,
                                configs,
-                               verbose = 1){
+                               ...){
 
-  ## Build Projs and stats data
-  if (verbose >= 1) message('Building raw data objects.\n')
+  vmc('Custom Ranking by Relative Rotisserie Value ("rrv")', ...)
   
-  # Projections
+  #crBuildProjsAndStats <
+  ## Build Projs and stats data
   projs_ <- list(bat = get(data(batprojs_df)),
                  pitch = get(data(pitchprojs_df)))
   
@@ -75,10 +82,10 @@ customRankings.rrv <- function(type,
                  field = get(data(fielding_df)))
   
   ## Build Projs and stats data
-  if (verbose >= 1) message('Calculating relative player values.\n')
   rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
                                         stats_ = stats_, 
-                                        configs = configs)
+                                        configs = configs,
+                                        ...)
 
   ## Convert to ranking and return
   rrvToRankings(rrv_obj = rrval_df,
@@ -100,7 +107,8 @@ customRankings.rrv <- function(type,
 
 customRankings.rrvt <- function(type,
                                 configs,
-                                verbose = 1){
+                                verbose = 1,
+                                ...){
   
   ## Build Projs and stats data
   if (verbose >= 1) message('Building raw data objects.\n')
@@ -115,10 +123,14 @@ customRankings.rrvt <- function(type,
                  field = get(data(fielding_df)))
   
   ## Build Projs and stats data
+  if (is.null(list(...)$rrv)){
   if (verbose >= 1) message('Calculating relative player values.\n')
-  rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
-                                        stats_ = stats_, 
-                                        configs = configs)
+    rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
+                                          stats_ = stats_, 
+                                          configs = configs)
+  } else {
+    rrval_df <- list(...)$rrv
+  }
   
   # if (verbose >= 1) message('Adjusting for team quality)
   rrvt_df <- crRelativeTeamAdj(rrv_df = rrval_df,
@@ -159,11 +171,14 @@ customRankings.rrvp <- function(type,
                  pitch = get(data(pitching_df)),
                  field = get(data(fielding_df)))
   
-  ## Build Projs and stats data
-  if (verbose >= 1) message('Calculating relative player values.\n')
-  rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
-                                        stats_ = stats_, 
-                                        configs = configs)
+  if (is.null(list(...)$rrv)){
+    if (verbose >= 1) message('Calculating relative player values.\n')
+    rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
+                                          stats_ = stats_, 
+                                          configs = configs)
+  } else {
+    rrval_df <- list(...)$rrv
+  }
   
   # if (verbose >= 1) message('Adjusting for team quality)
   rrvp_df <- crRelativePosAdj(rrv_df = rrval_df,
@@ -206,10 +221,14 @@ customRankings.rrvpt <- function(type,
                  field = get(data(fielding_df)))
   
   ## Build Projs and stats data
-  if (verbose >= 1) message('Calculating relative player values.\n')
-  rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
-                                        stats_ = stats_, 
-                                        configs = configs)
+  if (is.null(list(...)$rrv)){
+    if (verbose >= 1) message('Calculating relative player values.\n')
+    rrval_df <- crRelativeRotisserieValue(projs_ = projs_, 
+                                          stats_ = stats_, 
+                                          configs = configs)
+  } else {
+    rrval_df <- list(...)$rrv
+  }
   
   # if (verbose >= 1) message('Adjusting for team quality)
   rrvp_df <- crRelativePosAdj(rrv_df = rrval_df,
@@ -242,7 +261,10 @@ customRankings.rrvpt <- function(type,
 
 crRelativeRotisserieValue <- function(projs_,
                                       stats_,
-                                      configs){
+                                      configs,
+                                      ...){
+  
+  vmc('Calculating relative Rotisserie Value', ...)
   
   # Calc batting RRVs
   batrv_df <- crRelativeBattingValue(projs_df = projs_$bat, 
@@ -263,6 +285,75 @@ crRelativeRotisserieValue <- function(projs_,
     class = c('rrv', 'tbl_df', 'tbl', 'data.frame'))
   
 }
+
+
+#' 
+#' Convert RRV data (and other relative measure) to a set of rankings
+#' 
+#' @param rrv_obj RRV data from crRelativeRotisserieValue()
+#' @param projs_ Projection list of bat and pitch projections
+#' @param configs an `fbbConfigs` object
+#' @return A 'draftRankings' object
+#' @export
+
+rrvToRankings <- function(rrv_obj,
+                          projs_,
+                          configs,
+                          ...){
+  
+  cr_df <- projs_$bat %>%
+    dplyr::select(player_id, player, team, year, pos, pos_list) %>%
+    dplyr::filter(year == configs$season) %>%
+    dplyr::bind_rows(., projs_$pitch %>%
+                       dplyr::select(player_id, player, team, year,
+                                     pos, pos_list) %>%
+                       dplyr::filter(year == configs$season)) %>%
+    dplyr::left_join(., rrv_obj %>%
+                       dplyr::select(-player),
+                     by='player_id')
+  
+  if ('tv_obj' %in% names(list(...))){
+    cr_df <- cr_df %>%
+      dplyr::left_join(., list(...)$tv_obj, by = 'team') %>% 
+      dplyr::rename(rrv_origt = rrv) %>%
+      dplyr::mutate(rrv = rrv_origt + team_adj)
+  }
+  
+  if ('pv_obj' %in% names(list(...))){
+    
+    cr_df <- cr_df %>%
+      tidyr::unnest() %>%
+      dplyr::left_join(., list(...)$pv_obj, by = 'pos_list') %>%
+      dplyr::rename(rrv_origp = rrv) %>%
+      dplyr::mutate(rrv = rrv_origp + pos_adj) %>%
+      dplyr::group_by(player_id) %>%
+      dplyr::mutate(rrv = max(rrv)) %>%
+      dplyr::ungroup() %>%
+      tidyr::nest(pos_list, pos_adj, .key = 'pos_list') 
+  }
+  
+  if ('rv_obj' %in% names(list(...))){
+    ## NEEDS WORK
+    # cr_df <- cr_df %>%
+    #   dplyr::left_join(., pv_obj, by = 'team')
+    # Do a mutate to add value to existing
+  }
+  
+  structure(cr_df %>%
+              dplyr::arrange(desc(rrv)) %>%
+              dplyr::distinct(player_id, .keep_all = TRUE) %>%
+              dplyr::mutate(ranking = as.numeric(rownames(.))) %>%
+              dplyr::filter(team != '') %>%
+              dplyr::select(player_id, player, team, year, pos, pos_list, rrv, ranking,
+                            tidyselect::everything()),
+            class = c('draftRankings', 'tbl_df', 'tbl', 'data.frame'),
+            team_values = list(...)$tv_obj,
+            pos_values = list(...)$pv_obj,
+            roster_values = list(...)$rv_obj)
+}
+
+
+### Batting ------------------------------------------------------------------------------
 
 #' 
 #' Calculate relative rotisserie values for batters
@@ -375,6 +466,42 @@ crRelativeBattingValue <- function(projs_df,
   
   var_df
 }
+
+#' 
+#' Simulate a batting season
+#' 
+#' Sum up all batting stats or projections to get total rotisserie raw category counts and
+#' ratios
+#' 
+#' @param iter Iteration number of the simulation
+#' @param rosterstats_df Individual player stats or projections
+#' @param configs An `fbbConfigs` object
+#' @return Summed total of hitting statistics/projections
+#' @importFrom dplyr bind_rows mutate
+#' @export
+#' 
+
+simBattingSeason <- function(iter, 
+                             rosterstats_df,
+                             configs){
+  
+  # Build Teams
+  set.seed(iter)
+  rand_id <- rep(1:configs$nbr_owners, 
+                 sum(configs$roster$count[configs$roster$type == 'hit']))
+  teams_ <- split(rosterstats_df, rand_id[order(runif(length(rand_id), 0 ,1))])
+  
+  # Sum, flatten, adjust and return
+  lapply(teams_, function(x) as.data.frame(t(colSums(x))))%>%
+    dplyr::bind_rows() %>%
+    dplyr::mutate(obp = obp / sum(configs$roster$count[
+      configs$roster$type == 'hit']),
+      slg = slg / sum(configs$roster$count[
+        configs$roster$type == 'hit']))
+}
+
+
+### Pitching -----------------------------------------------------------------------------
 
 #' 
 #' Calculate relative rotisserie values for pitchers
@@ -546,6 +673,53 @@ crRelativePitchingValue <- function(projs_df,
 }
  
 #' 
+#' Simulate a pitching season
+#' 
+#' Sum up all pitching stats or projections to get total rotisserie raw category counts and
+#' ratios
+#' 
+#' @param iter Iteration number of the simulation
+#' @param rosterstats_df Individual player stats or projections
+#' @param configs An `fbbConfigs` object
+#' @return Summed total of hitting statistics/projections
+#' @importFrom dplyr bind_rows 
+#' @export
+
+simPitchingSeason <- function(iter, 
+                              rosterstats_df,
+                              configs){
+  
+  # Build Teams
+  set.seed(iter)
+  rand_id <- rep(1:configs$nbr_owners, 
+                 sum(configs$roster$count[configs$roster$type == 'pitch']))
+  teams_ <- split(rosterstats_df, rand_id[order(runif(length(rand_id), 0 ,1))])
+  teams_ <- lapply(teams_, adjustWhip)
+  
+  # Sum, flatten, adjust and return
+  lapply(teams_, function(x) as.data.frame(t(colSums(x))))%>%
+    dplyr::bind_rows() 
+}
+
+#' 
+#' Adjust whip values by team numbers
+#' 
+#' @param team_df Team of pitching stats
+#' @return Adjusted WHIP values
+#' @export
+
+adjustWhip <- function(team_df){
+  
+  team_df$whip <- (team_df$ip * team_df$whip)/sum(team_df$ip)
+  team_df
+}
+
+### Helpers ------------------------------------------------------------------------------
+
+
+
+
+#' 
 #' Expert correction of rv values from simulations
 #' 
 #' As simulations results can be extreme (usually on the small end), this makes some
@@ -636,146 +810,9 @@ calcRelativeRotisserieValue <- function(data, name, rp, rv, configs){
   } 
 }
 
-#' 
-#' Simulate a batting season
-#' 
-#' Sum up all batting stats or projections to get total rotisserie raw category counts and
-#' ratios
-#' 
-#' @param iter Iteration number of the simulation
-#' @param rosterstats_df Individual player stats or projections
-#' @param configs An `fbbConfigs` object
-#' @return Summed total of hitting statistics/projections
-#' @importFrom dplyr bind_rows mutate
-#' @export
-#' 
 
-simBattingSeason <- function(iter, 
-                             rosterstats_df,
-                             configs){
-  
-  # Build Teams
-  set.seed(iter)
-  rand_id <- rep(1:configs$nbr_owners, 
-                 sum(configs$roster$count[configs$roster$type == 'hit']))
-  teams_ <- split(rosterstats_df, rand_id[order(runif(length(rand_id), 0 ,1))])
 
-  # Sum, flatten, adjust and return
-  lapply(teams_, function(x) as.data.frame(t(colSums(x))))%>%
-    dplyr::bind_rows() %>%
-    dplyr::mutate(obp = obp / sum(configs$roster$count[
-                    configs$roster$type == 'hit']),
-                  slg = slg / sum(configs$roster$count[
-                    configs$roster$type == 'hit']))
-}
-
-#' 
-#' Simulate a pitching season
-#' 
-#' Sum up all pitching stats or projections to get total rotisserie raw category counts and
-#' ratios
-#' 
-#' @param iter Iteration number of the simulation
-#' @param rosterstats_df Individual player stats or projections
-#' @param configs An `fbbConfigs` object
-#' @return Summed total of hitting statistics/projections
-#' @importFrom dplyr bind_rows 
-#' @export
-
-simPitchingSeason <- function(iter, 
-                              rosterstats_df,
-                              configs){
-  
-  # Build Teams
-  set.seed(iter)
-  rand_id <- rep(1:configs$nbr_owners, 
-                 sum(configs$roster$count[configs$roster$type == 'pitch']))
-  teams_ <- split(rosterstats_df, rand_id[order(runif(length(rand_id), 0 ,1))])
-  teams_ <- lapply(teams_, adjustWhip)
-  
-  # Sum, flatten, adjust and return
-  lapply(teams_, function(x) as.data.frame(t(colSums(x))))%>%
-    dplyr::bind_rows() 
-}
-
-#' 
-#' Adjust whip values by team numbers
-#' 
-#' @param team_df Team of pitching stats
-#' @return Adjusted WHIP values
-#' @export
-
-adjustWhip <- function(team_df){
-  
-  team_df$whip <- (team_df$ip * team_df$whip)/sum(team_df$ip)
-  team_df
-}
-
-#' 
-#' Convert RRV data (and other relative measure) to a set of rankings
-#' 
-#' @param rrv_obj RRV data from crRelativeRotisserieValue()
-#' @param projs_ Projection list of bat and pitch projections
-#' @param configs an `fbbConfigs` object
-#' @return A 'draftRankings' object
-#' @export
-
-rrvToRankings <- function(rrv_obj,
-                          projs_,
-                          configs,
-                          ...){
-  
-  cr_df <- projs_$bat %>%
-    dplyr::select(player_id, player, team, year, pos, pos_list) %>%
-    dplyr::filter(year == configs$season) %>%
-    dplyr::bind_rows(., projs_$pitch %>%
-                       dplyr::select(player_id, player, team, year,
-                                     pos, pos_list) %>%
-                       dplyr::filter(year == configs$season)) %>%
-    dplyr::left_join(., rrv_obj %>%
-                       dplyr::select(-player),
-                     by='player_id')
-  
-  if ('tv_obj' %in% names(list(...))){
-    cr_df <- cr_df %>%
-      dplyr::left_join(., list(...)$tv_obj, by = 'team') %>% 
-      dplyr::rename(rrv_origt = rrv) %>%
-      dplyr::mutate(rrv = rrv_origt + team_adj)
-  }
-  
-  if ('pv_obj' %in% names(list(...))){
-    
-    cr_df <- cr_df %>%
-      tidyr::unnest() %>%
-      dplyr::left_join(., list(...)$pv_obj, by = 'pos_list') %>%
-      dplyr::rename(rrv_origp = rrv) %>%
-      dplyr::mutate(rrv = rrv_origp + pos_adj) %>%
-      dplyr::group_by(player_id) %>%
-      dplyr::mutate(rrv = max(rrv)) %>%
-      dplyr::ungroup() %>%
-      tidyr::nest(pos_list, pos_adj, .key = 'pos_list') 
-  }
-  
-  if ('rv_obj' %in% names(list(...))){
-    ## NEEDS WORK
-    # cr_df <- cr_df %>%
-    #   dplyr::left_join(., pv_obj, by = 'team')
-    # Do a mutate to add value to existing
-  }
-  
-  structure(cr_df %>%
-              dplyr::arrange(desc(rrv)) %>%
-              dplyr::distinct(player_id, .keep_all = TRUE) %>%
-              dplyr::mutate(ranking = as.numeric(rownames(.))) %>%
-              dplyr::filter(team != '') %>%
-              dplyr::select(player_id, player, team, year, pos, pos_list, rrv, ranking,
-                            tidyselect::everything()),
-            class = c('draftRankings', 'tbl_df', 'tbl', 'data.frame'),
-            team_values = list(...)$tv_obj,
-            pos_values = list(...)$pv_obj,
-            roster_values = list(...)$rv_obj)
-}
-
+### Adjustors ----------------------------------------------------------------------------
 
 #' @export
 
@@ -835,5 +872,4 @@ crRelativePosAdj <- function(rrv_df,
     dplyr::arrange(pos_adj)
   
 }
-
 

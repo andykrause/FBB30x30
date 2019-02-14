@@ -4,12 +4,14 @@
 \alias{customRankings.fp}
 \title{Fantasy pros (fp)}
 \usage{
-\method{customRankings}{fp}(type, configs, verbose = 1)
+\method{customRankings}{fp}(type, configs, ...)
 }
 \arguments{
-\item{type}{Type of custom ranking system to use ('xxx' for now)}
+\item{type}{Type of custom ranking system to use ('fp')}
 
 \item{configs}{An `fbbConfigs` object}
+
+\item{...}{Additional argumenss}
 
 \item{verbose}{[1] The level of reponse statements you'd like (higher = more)}
 }

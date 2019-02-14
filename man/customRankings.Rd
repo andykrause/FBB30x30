@@ -4,7 +4,7 @@
 \alias{customRankings}
 \title{Generic method for custom ranking processes}
 \usage{
-customRankings(type, configs, verbose = 1)
+customRankings(type, configs, verbose = 1, ...)
 }
 \arguments{
 \item{type}{Type of custom ranking system to use ('rrv' for now)}
@@ -12,6 +12,8 @@ customRankings(type, configs, verbose = 1)
 \item{configs}{An `fbbConfigs` object}
 
 \item{verbose}{[1] The level of reponse statements you'd like (higher = more)}
+
+\item{...}{Additional arguments}
 }
 \value{
 A custom ranking set

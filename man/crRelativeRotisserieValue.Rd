@@ -4,7 +4,7 @@
 \alias{crRelativeRotisserieValue}
 \title{Calculate relative rotisserie values}
 \usage{
-crRelativeRotisserieValue(projs_, stats_, configs)
+crRelativeRotisserieValue(projs_, stats_, configs, ...)
 }
 \arguments{
 \item{projs_}{List of batting and pitching projections}

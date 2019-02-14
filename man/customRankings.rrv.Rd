@@ -4,7 +4,7 @@
 \alias{customRankings.rrv}
 \title{Relative rotisserie values (rrv)}
 \usage{
-\method{customRankings}{rrv}(type, configs, verbose = 1)
+\method{customRankings}{rrv}(type, configs, ...)
 }
 \arguments{
 \item{type}{Type of custom ranking system to use ('xxx' for now)}
