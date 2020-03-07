@@ -3,7 +3,7 @@
   library(tidyverse)
 
   configs <- setConfigs(nbr_owners = 8,
-                        season_year = 2018,
+                        season_year = 2019,
                         rankings = c('rrv', rep('fp', 7)))
 
   
@@ -12,6 +12,12 @@
                  vmc = 11) -> x
   
   
+  
+  
+ a <- setConfigs(nbr_owners = 8,
+                 season_year = 2019)  
+ cr <- customRankings(type = 'rrv',
+                      configs = configs)  
   
   
   

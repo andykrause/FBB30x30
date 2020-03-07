@@ -28,6 +28,10 @@ https://github.com/maxtoki/baseball_R
 
 ## R Packages
 
+https://github.com//cdalzell/lahman
+* `devtools::install_github("cdalzell/l")`
+
+
 https://github.com/rmscriven/retrosheet
 * `devtools::install_github("rmscriven/retrosheet")`
 

@@ -72,8 +72,9 @@ addPlayerID <- function(x_df,
   
   match_df <- x_df %>%
     dplyr::mutate(temp_id = 1:nrow(x_df)) %>%
-    dplyr::left_join(players_df[, c('full', 'player_id')],
-                     by=c('player' = 'full')) %>%
+    dplyr::left_join(players_df %>%
+                       dplyr::select(player_id, player = full),
+                     by = 'player') %>%
     dplyr::group_by(temp_id) %>%
     dplyr::mutate(count = n()) %>%
     dplyr::ungroup()

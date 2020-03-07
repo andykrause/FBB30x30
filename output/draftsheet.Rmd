@@ -1,0 +1,372 @@
+---
+title: "draft sheet"
+author: "Andy Krause"
+date: "March 20, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+ 
+```{r, echo=FALSE}
+  library(magrittr)
+  load(file = file.path('C:/Code/sportsQuant/FBB30x30', 'output', 'fordraft.rdata'))
+```
+
+## Team Tiers
+
+| Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+| :-----: | :-----: | :-----: | :------: |
+| BOS   | STL   | OAK...   | SF...   |
+| CLE   | ATL   | PIT...   |  CWS...   |
+| NYY   | MIL   | TB   | MIA   |
+| PHI    | CHC   | TEX   | BAL   |
+| WSH   | ...CIN    | ARI   | DET   |
+| HOU   | ...MIN   | LAA   |   |
+| LAD   | ...NYM   |...KC   |   |
+| COL    | ...TOR      | ...SEA   |   |
+ | | ...SD | |   
+
+## Team Fill In
+
+| Team | Player | | Team | Player | | Team | Player |
+| :-----: | :-------------------: | :-----: | :-------------------: | :-----: | :-------------------: |
+|     |   |     | |     | |
+| BAL | __________________ | CWS | ___________________ | HOU | _______________ |
+|     |   |     | |     | |
+| BOS | __________________  | MIN | ___________________ | LAA | _______________ |
+|     |   |     | |     | |
+| NYY | __________________  | KC  | ___________________| OAK | _______________ |
+|     |   |     | |     | |
+| TB  | __________________  | CLE | ___________________| SEA |  _______________|
+|     |   |     | |     | |
+| TOR | __________________  | DET | ___________________| TEX | _______________ |
+|     |   |     | |     | |
+| PHI | __________________  | MIL | ___________________| SF  | _______________ |
+|     |   |     | |     | |
+| ATL | __________________  | STL | ___________________| LAD | _______________ |
+|     |   |     | |     | |
+| NYM | __________________  | CIN | ___________________| SD  | _______________ |
+|     |   |     | |     | |
+| WSH | __________________  | PIT | ___________________| COL | _______________ |
+|     |   |     | |     | |
+| MIA | __________________  | CHC | ___________________| ARI | _______________ |
+|     |   |     | |     | |
+
+\pagebreak
+
+## Hold Targets
+
+* **ARI**: Bradley/Hirano
+* **DET**: Jimenez
+* **HOU**: Pressly
+* **MIA**: Romo/Steckenrider
+* **PIT**: Kela
+* **SD**: Stammen/Wintgenter
+* **SF**: Watson/Dyson/Smith/Melancon
+* **TB**: Roe/Castillo
+* **TEX**: Chavez
+* **TOR**: Tepera
+
+## Sleeper Targets
+
+* F. Meija - C - SD
+* V. Robles - OF - WSH
+* W. Adames - 2B/SS - TOR
+* L. Gurriel - 2B/SS - TOR
+* B. Lowe - 2B - TB
+* J. Candelario - 3B - DET
+* C. Pinder - 1B/2B - OAK
+* M. Pineda - SP - MIN
+* C. Paddack - SP - SD
+* M. Strahm - SP - SD
+* F. Peralta - SP - MIL
+* B. Woodruff - SP - MIL
+* E. Lauer - SP - SD
+* J. Luchesi - SP - SD
+* T. Richards - SP - MIA
+* B. Keller - SP - KC
+* C. Smith - SP - MIA
+* P. Lopez - SP - MIA
+
+
+\pagebreak
+ 
+## Catchers
+
+```{r, echo=FALSE}
+  knitr::kable(bpos[['C']] %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+\pagebreak
+
+## 1B
+```{r, echo=FALSE}
+  knitr::kable(bpos[['1B']] %>% dplyr::filter(rrv > -.82)  %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+## 2B
+```{r, echo=FALSE}
+  knitr::kable(bpos[['2B']] %>% dplyr::filter(rrv > -1)  %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+\pagebreak
+
+## SS
+```{r, echo=FALSE}
+  knitr::kable(bpos[['SS']] %>% dplyr::filter(rrv > -1) %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+## 3B
+```{r, echo=FALSE}
+  knitr::kable(bpos[['3B']] %>% dplyr::filter(rrv > -.9)  %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+\pagebreak
+
+## LF
+```{r, echo=FALSE}
+  knitr::kable(bpos[['LF']] %>% 
+                 dplyr::filter(rrv > -.29) %>% 
+                 dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+\pagebreak
+
+## CF
+```{r, echo=FALSE}
+  knitr::kable(bpos[['CF']] %>% dplyr::filter(rrv > -.97) %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+\pagebreak
+
+## RF
+```{r, echo=FALSE}
+  knitr::kable(bpos[['RF']] %>% dplyr::filter(rrv > -.33)  %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+## DH
+```{r, echo=FALSE}
+  knitr::kable(bpos[['DH']] %>% dplyr::filter(rrv > -1)  %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+
+## SP
+```{r, echo=FALSE}
+  knitr::kable(ppos[['SP']] %>% dplyr::filter(rrv > -1)  %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+
+\pagebreak
+
+## RP
+```{r, echo=FALSE}
+  knitr::kable(ppos[['RP']] %>% dplyr::filter(rrv > -.74)  %>% dplyr::select(-c(adp, pos)) %>%
+                 dplyr::mutate(player = substr(player, 1, 17)))
+```
+
+\pagebreak
+\pagebreak
+
+```{r}
+  knitr::kable(full_df[1:350, ])
+
+```
+
+\pagebreak
+\pagebreak
+
+```{r}
+i <- 1
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+\pagebreak
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```
+
+```{r}
+knitr::kable(team_[[i]], format = 'latex')
+i <- i + 1
+```

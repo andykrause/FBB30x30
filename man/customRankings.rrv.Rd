@@ -10,8 +10,6 @@
 \item{type}{Type of custom ranking system to use ('xxx' for now)}
 
 \item{configs}{An `fbbConfigs` object}
-
-\item{verbose}{[1] The level of reponse statements you'd like (higher = more)}
 }
 \value{
 A custom ranking set

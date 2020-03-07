@@ -37,7 +37,8 @@
 ### People and Teams ---------------------------------------------------------------------
   
   # Players  
-  players_df <- read.csv(file.path(getwd(), 'data', 'raw', 'players', 'people.csv'))
+  players_df <- readr::read_delim(file = file.path(getwd(), 'data', 'raw', 'players', 'people.csv'),
+                                  delim = ',')
   
   players_df <- players_df %>%
     dplyr::filter(as.Date(as.character(finalGame)) >= as.Date('2014-01-01')) %>%
@@ -58,8 +59,8 @@
   usethis::use_data(players_df, overwrite=TRUE)
   
   # Teams
-  teams_df <- read.csv(file.path(getwd(), 'data', 'raw', 'players', 'teams.csv'),
-                       stringsAsFactors = FALSE)
+  teams_df <- readr::read_delim(file.path(getwd(), 'data', 'raw', 'players', 'teams.csv'),
+                                delim = ',')
   
   teams_df <- teams_df %>%
     dplyr::filter(yearID == 2017) %>%
@@ -82,7 +83,7 @@
 ### Statistics ---------------------------------------------------------------------------
   
   # Read in Fielding data
-  fielding_df <- purrr::map(.x = 2013:2018,
+  fielding_df <- purrr::map(.x = 2013:2019,
                             .f = getBRStats,
                             type ='fielding') %>%
     dplyr::bind_rows()
@@ -90,7 +91,7 @@
    usethis::use_data(fielding_df, overwrite=TRUE)
    
   # Load Data
-   batting_df <- purrr::map(.x = 2013:2018,
+   batting_df <- purrr::map(.x = 2013:2019,
                             .f = getBRStats,
                             type ='batting') %>%
      dplyr::bind_rows()
@@ -99,7 +100,7 @@
    
  ## Pitching stats
    
-   pitching_df <- purrr::map(.x = 2013:2018,
+   pitching_df <- purrr::map(.x = 2013:2019,
                              .f = getBRStats,
                              type ='pitching') %>%
      dplyr::bind_rows()
@@ -110,9 +111,9 @@
 
    ## Marcel
    
-   marcel2018_proj <- scrapeMarcelProjections(year = 2018)
+   marcel2019_proj <- scrapeMarcelProjections(year = 2019)
    
-   usethis::use_data(marcel2018_proj, overwrite = TRUE)
+   usethis::use_data(marcel2019_proj, overwrite = TRUE)
    
    ## Load Projection Data
 
@@ -130,6 +131,9 @@
       dplyr::filter(Team != '158')
     hp_2019 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
                                   'fp_hitters_2019.csv'))
+    hp_2020 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
+                                  'fp_hitters_2020.csv'))
+    
     
 
     # Hitters
@@ -145,7 +149,8 @@
                                   'fp_pitchers_2018.csv'))
     pp_2019 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
                                   'fp_pitchers_2019.csv'))
-    
+    pp_2020 <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
+                                  'fp_pitchers_2020.csv'))
 
    ## Standardize Projection Data
 
@@ -164,9 +169,9 @@
                     player = as.character(player),
                     team = as.character(team)) %>%
       dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
-      tidyr::unnest() %>%
+      tidyr::unnest(cols = c(pos_list)) %>%
       dplyr::filter(pos_list != '|') %>%
-      tidyr::nest(pos_list, .key = 'pos_list') %>%
+      tidyr::nest(pos_list = c(pos_list)) %>%
       dplyr::select(-c(cs, type)) %>%
       addPlayerID(., players_df = players_df) 
       
@@ -298,8 +303,31 @@
       dplyr::left_join(gidp_df, by = 'player_id') %>%
       dplyr::left_join(e_df, by = 'player_id')
     
+    # 2020
+    names(hp_2020) <- tolower(names(hp_2020))
+    hp_2020 <- hp_2020 %>%
+      dplyr::rename(pos = positions) %>%
+      dplyr::mutate(year = 2020,
+                    pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    player = as.character(player),
+                    team = as.character(team)) %>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
+      addPlayerID(., players_df = players_df) 
+    
+    gidp_df <- projectGIDP(batting_df, hp_2020, proj_year = 2020)
+    e_df <- projectErrors(fielding_df, hp_2020, proj_year = 2020)
+    
+    hp_2020 <- hp_2020 %>%
+      dplyr::left_join(gidp_df, by = 'player_id') %>%
+      dplyr::left_join(e_df, by = 'player_id')
+    
+    
     # Combine
-    batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018, hp_2019) %>%
+    batprojs_df <- rbind(hp_2014, hp_2015, hp_2016, hp_2017, hp_2018, hp_2019, hp_2020) %>%
       tibble::as.tibble()%>%
       dplyr::select(player_id, player, team, year, pos, pos_list, 
                     tidyselect::everything())%>%
@@ -454,8 +482,31 @@
       dplyr::left_join(qs_df, by = 'player_id') %>%
       dplyr::left_join(holds_df, by = 'player_id')
     
+    # 2020
+    names(pp_2020) <- tolower(names(pp_2020))
+    pp_2020 <- pp_2020 %>%
+      dplyr::rename(pos = positions) %>%
+      dplyr::mutate(pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    year = 2020,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
+      dplyr::select(-c(hr))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
+      addPlayerID(., players_df = players_df) 
+    
+    qs_df <- projectQS(pitching_df, pp_2020, proj_year = 2020)
+    holds_df <- projectHolds(pitching_df, pp_2020, proj_year = 2020)
+    
+    pp_2020 <- pp_2020 %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id')
+    
     # Combine Al
-    pitchprojs_df <- rbind(pp_2014, pp_2015, pp_2016, pp_2017, pp_2018, pp_2019) %>%
+    pitchprojs_df <- rbind(pp_2014, pp_2015, pp_2016, pp_2017, pp_2018, pp_2019, pp_2020) %>%
       tibble::as.tibble() %>%
       dplyr::select(player_id, player, team, year, pos, pos_list, 
                     tidyselect::everything()) %>%
@@ -477,7 +528,10 @@
                                   'fp_draftrankings_2018.csv'))
   rank_2019 <- read.csv(file.path(getwd(), 'data', 'raw', 'rankings', 
                                   'fp_draftrankings_2019.csv'))
-
+  
+  rank_2020 <- read.csv(file.path(getwd(), 'data', 'raw', 'rankings', 
+                                  'fp_draftrankings_2020.csv'))
+  
   # 2016
   names(rank_2016) <- tolower(names(rank_2016))
   rank_2016 <- rank_2016 %>% 
@@ -542,17 +596,39 @@
     dplyr::mutate(pos = gsub(',', '/', pos),
                   pos = gsub('/', ' | ', pos),
                   year = 2019,
-                  vs..adp = NULL,
                   team = as.character(team),
-                  player = as.character(player)) %>%
-    tibble::as.tibble()
+                  player = as.character(player),
+                  adp = as.numeric(adp),
+                  avg = as.numeric(avg)) %>%
+    tibble::as.tibble() %>%
+    dplyr::select(-c(vs..adp))
   
-  ## TEMP
-  rank_2019$adp <- 0
+  # ## TEMP
+  # rank_2019$adp <- 0
   rank_2019$adp[is.na(rank_2019$adp)] <- ceiling(rank_2019$avg[is.na(rank_2019$adp)])
 
+  # 2020
+  names(rank_2020) <- tolower(names(rank_2020))
+  rank_2020 <- rank_2020 %>% 
+    dplyr::rename(pos = positions,
+                  ranking = rank,
+                  st_dev = std.dev) %>%
+    dplyr::mutate(pos = gsub(',', '/', pos),
+                  pos = gsub('/', ' | ', pos),
+                  year = 2020,
+                  team = as.character(team),
+                  player = as.character(player),
+                  adp = as.numeric(adp),
+                  avg = as.numeric(avg)) %>%
+    tibble::as.tibble() %>%
+    dplyr::select(-c(vs..adp))
+  
+  # ## TEMP
+  # rank_2020$adp <- 0
+  rank_2020$adp[is.na(rank_2020$adp)] <- ceiling(rank_2020$avg[is.na(rank_2020$adp)])
+  
   # Combine All
-  rankings_df <- rbind(rank_2016, rank_2017, rank_2018, rank_2019) %>%
+  rankings_df <- rbind(rank_2016, rank_2017, rank_2018, rank_2019, ran_2020) %>%
     tibble::as.tibble() %>%
     dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
     tidyr::unnest() %>%
@@ -577,6 +653,8 @@
 ### Seasons ------------------------------------------------------------------------------
   
   ## Read in Data  
+  season2019_df <- readr::read_delim(file.path(getwd(), 'data', 'raw', 'seasons', 'season2019.csv'),
+                                     delim = ';')
   season2018_df <- read.csv(file.path(getwd(), 'data', 'raw', 'seasons', 'season2018.csv'))
   season2017_df <- read.csv(file.path(getwd(), 'data', 'raw', 'seasons', 'season2017.csv'))
   season2016_df <- read.csv(file.path(getwd(), 'data', 'raw', 'seasons', 'season2016.csv'))
@@ -610,6 +688,12 @@
                   obp = OBP, slg = SLG, gidp = GIDP, e = E, ip = IP, qs = QS, k = K.1, 
                   sv = SV, hd = HD, whip = WHIP, moves = Moves, starts = Starts)
   
+  season2019_df <- season2019_df %>%
+    dplyr::select(team = Team, rank = Rank, r = R, hr = HR, rbi = RBI, so = K, sb = SB, 
+                  obp = OBP, slg = SLG, gidp = GIDP, e = E, ip = IP, qs = QS, k = K_1, 
+                  sv = SV, hd = HD, whip = WHIP, moves = Moves, starts = Starts)
+  
+  
   seasons_ <- list(`2015` = structure(season2015_df, 
                                       class = c('season', class(season2015_df))),
                    `2016` = structure(season2016_df, 
@@ -617,6 +701,8 @@
                    `2017` = structure(season2017_df, 
                                       class = c('season', class(season2015_df))),
                    `2018` = structure(season2018_df, 
+                                      class = c('season', class(season2015_df))),
+                   `2019` = structure(season2019_df,
                                       class = c('season', class(season2015_df))))
   
   usethis::use_data(seasons_, overwrite=TRUE) 
