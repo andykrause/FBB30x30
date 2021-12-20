@@ -3,7 +3,7 @@
   library(tidyverse)
 
   configs <- setConfigs(nbr_owners = 8,
-                        season_year = 2019,
+                        season_year = 2020,
                         rankings = c('rrv', rep('fp', 7)))
 
   
@@ -17,7 +17,7 @@
   
   full_df <- x %>% 
     dplyr::left_join(., rankings_df %>%
-                       dplyr::filter(year == 2019) %>%
+                       dplyr::filter(year == 2020) %>%
                        dplyr::select(player_id, adp = ranking),
                      by = 'player_id') %>%
     dplyr::select(-c(pos_list, player_id)) %>%
@@ -29,7 +29,7 @@
   
   pos_ <- purrr::map(.x = x %>% 
                        dplyr::left_join(., rankings_df %>%
-                                            dplyr::filter(year == 2019) %>%
+                                            dplyr::filter(year == 2020) %>%
                                             dplyr::select(player_id, adp = ranking),
                                         by = 'player_id') %>% 
                        dplyr::mutate(diff = adp - ranking) %>%
@@ -45,12 +45,12 @@
   data(pitchprojs_df)
   
   bat_df <- batprojs_df %>%
-    dplyr::filter(year == 2019) %>%
+    dplyr::filter(year == 2020) %>%
     dplyr::select(-c(player, team, year, pos, pos_list, x2b, x3b, avg, ops, h)) %>%
     dplyr::mutate(e = round(e, 0))
   
   pitch_df <- pitchprojs_df %>%
-    dplyr::filter(year == 2019) %>%
+    dplyr::filter(year == 2020) %>%
     dplyr::select(-c(player, team, year, pos, pos_list, w, l, h, er, bb, cg))
    
   bpos <- pos_[!names(pos_) %in% c('P', 'RP', 'SP')]
@@ -76,3 +76,7 @@
   
   save(bpos, ppos, team_, full_df,
        file = file.path(getwd(), 'output', 'fordraft.rdata'))
+  
+  
+  
+  

@@ -1,0 +1,370 @@
+---
+title: "1_Update_Data"
+author: "Andy Krause"
+date: "3/6/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This is the file to run through, manually, each year prior to running any analyses or simulations.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Setup
+
+Set the upcoming year
+
+```{r}
+  YEAR <- 2020
+```
+
+Load Libraries
+
+```{r comment = FALSE, message = FALSE, warning = FALSE}
+  library(readr)
+  library(tidyverse)
+  library(FBB30x30)
+```
+
+Set the names of the tables from Baseball Reference that you'll need to read from for the statistics.  It is highly unlikely you'll need to change this, unless you change scoring categories. Consult www.baseballreference.com for details on the available tables.  
+
+```{r}
+
+  baseballref_df <- data.frame(data = c('Batting - Standard', 'Batting - Ratio',
+                                        'Batting - Value', 'Batting - Pitches',
+                                        'Batting - Win Probability', 'Batting - Advanced', 
+                                        'Batting - Situational', 'Batting - Baserunning', 
+                                        'Fielding - Appearances', 'Fielding - Standard',
+                                        'Pitching - Standard', 'Pitching - Starter',
+                                        'Pitching - Reliever', 'Pitching - Ratio',
+                                        'Pitching - Value', 'Pitching - Pitches', 
+                                        'Pitching - Win Probability'),
+                               code = c('standard-batting', 'ratio-batting', 
+                                        'value-batting', 'pitches-batting', 
+                                        'win_probability-batting', 
+                                        'advanced-batting', 'situational-batting',
+                                        'baserunning-batting', 
+                                        'appearances-fielding', 
+                                        'standard-fielding', 'standard-pitching',
+                                        'starter-pitching', 'reliever-pitching',
+                                        'ratio-pitching', 'value-pitching',
+                                        'pitches-pitching', 
+                                        'win_probability-pitching'),
+                               stringsAsFactors = FALSE) %>%
+    tibble::as.tibble()
+  usethis::use_data(baseballref_df, overwrite=TRUE)
+  
+```
+
+### Standard Lahman Data 
+
+Next, downlad the new **players.csv** file from Lahman database.  In recent years this was only available at https://github.com/chadwickbureau/baseballdatabank in .csv.  Ensure the formatting is correct before proceeding.  
+
+```{r eval=FALSE}
+
+  # Read in file of new players
+  setwd('..')
+  players_df <- readr::read_delim(file = file.path(getwd(), 'data', 'raw', 
+                                                    'players', 'people.csv'), delim = ',')
+
+  # Prepare data
+  players_df <- players_df %>%
+    dplyr::filter(as.Date(as.character(finalGame)) >= as.Date('2014-01-01')) %>%
+    dplyr::select(player_id = playerID, retro_id = retroID, bbref_id = bbrefID, 
+                  first = nameFirst, last = nameLast, given = nameGiven, 
+                  last_game = finalGame) %>%
+    dplyr::mutate(full = paste(first, last),
+                  last_game = as.Date(as.character(last_game)),
+                  player_id = as.character(player_id), 
+                  retro_id = as.character(retro_id), 
+                  bbref_id = as.character(bbref_id), 
+                  first = as.character(first), 
+                  last = as.character(last), 
+                  given = as.character(given))
+  class(players_df) <- c('players', class(players_df))
+  
+  ## Save object
+  usethis::use_data(players_df, overwrite=TRUE)
+
+```
+
+Update the teams.  This is very unlikely to change year to year, but it is easy to do.  Like the players, download **teams.csv** from a Lahman source. 
+
+```{r, eval = FALSE}
+  
+  # Read in data
+  setwd('..')
+  teams_df <- readr::read_delim(file.path(getwd(), 'data', 'raw', 'players', 'teams.csv'),
+                                delim = ',')
+  
+  # Prepare Data
+  teams_df <- teams_df %>%
+    dplyr::filter(yearID == YEAR - 1) %>%
+    dplyr::select(team_id = teamID, br_id = teamIDBR, lahman_id = teamIDlahman45,
+                  retro_id = teamIDretro) %>%
+    dplyr::mutate(espn_id = c('ARI', 'ATL', 'BAL', 'BOS', 'CWS', 'CHC', 'CIN', 'CLE',
+                              'COL', 'DET', 'HOU', 'KC', 'LAA', 'LAD', 'MIA', 'MIL',
+                              'MIN', 'NYY', 'NYM', 'OAK', 'PHI', 'PIT', 'SD', 'SEA',
+                              'SF', 'STL', 'TB', 'TEX', 'TOR', 'WAS'),
+                  retrosheet_id = c('ARI N', 'ATL N', 'BAL A', 'BOS A', 'CHI A', 'CHI N',
+                                    'CIN N', 'CLE A', 'COL N', 'DET A', 'HOU A', 'KC  A', 
+                                    'ANA A', 'LA  N', 'MIA N', 'MIL N', 'MIN A', 'NY  A',
+                                    'NY  N', 'OAK A', 'PHI N', 'PIT N', 'SD  N', 'SEA A',
+                                    'SF  N', 'STL N', 'TB  A', 'TEX A', 'TOR A', 'WAS N'))
+  class(teams_df) <- c('teams', class(teams_df))
+
+  # Save Object
+  usethis::use_data(teams_df, overwrite=TRUE)
+```
+
+### Load Baseball Reference Stats 
+
+Begin by loading the fielding stats for the most recent year and combining them with those from prior years.  The `getBRStats()` function does the scraping. 
+
+```{r, eval = FALSE}
+  
+  # Load existing data
+  data(fielding_df, package = 'FBB30x30')
+  fielding_df <- fielding_df %>% 
+    dplyr::filter(year != YEAR)
+
+  # Read in Fielding data
+  fielding_df <- purrr::map(.x = YEAR - 1,
+                            .f = getBRStats,
+                            type ='fielding') %>%
+    dplyr::bind_rows(., fielding_df) %>%
+    dplyr::distinct(player_id, year, .keep_all = TRUE)
+  
+   usethis::use_data(fielding_df, overwrite=TRUE)
+
+```
+
+Next, load the batting stats for the most recent year and combining them with those from prior years.  The `getBRStats()` function does the scraping. 
+
+```{r, eval = FALSE}
+   
+  # Load existing data
+  data(batting_df, package = 'FBB30x30')
+  batting_df <- batting_df %>% 
+    dplyr::filter(year != YEAR)
+
+  # Load Data
+   batting_df <- purrr::map(.x = YEAR - 1,
+                            .f = getBRStats,
+                            type ='batting') %>%
+     dplyr::bind_rows(., batting_df) %>%
+    dplyr::distinct(player_id, year, .keep_all = TRUE)
+   
+   usethis::use_data(batting_df, overwrite=TRUE)
+
+```
+
+Then load the pitching stats for the most recent year and combining them with those from prior years.  The `getBRStats()` function does the scraping. 
+
+```{r, eval = FALSE}
+  
+   # Load existing data
+  data(pitching_df, package = 'FBB30x30')
+  pitching_df <- pitching_df %>% 
+    dplyr::filter(year != YEAR)
+ 
+  # Pitching stats
+  pitching_df <- purrr::map(.x = YEAR - 1,
+                            .f = getBRStats,
+                            type ='pitching') %>%
+     dplyr::bind_rows(., pitching_df) %>%
+    dplyr::distinct(player_id, year, .keep_all = TRUE)
+   
+  # Save object
+  usethis::use_data(pitching_df, overwrite=TRUE)
+   
+```
+
+### Projections
+
+Now we turn to projects for this year.  These are downloades manually from FantasyPros. 
+
+Start with batting.
+
+```{r, eval = FALSE}
+
+  # Load Existing
+  data(batprojs_df)
+   batprojs_df <- batprojs_df %>% 
+    dplyr::filter(year != YEAR)
+
+  # Load New Projections
+  setwd('..')
+  new_hp <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
+                                  paste0('fp_hitters_', YEAR, '.csv')))
+
+  # Prep data
+  names(new_hp) <- tolower(names(new_hp))
+  new_hp <- new_hp %>%
+      dplyr::rename(pos = positions) %>%
+      dplyr::mutate(year = YEAR,
+                    pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    player = as.character(player),
+                    team = as.character(team)) %>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
+      addPlayerID(., players_df = players_df) 
+    
+    gidp_df <- projectGIDP(batting_df, new_hp, proj_year = YEAR)
+    e_df <- projectErrors(fielding_df, new_hp, proj_year = YEAR)
+    
+    new_hp <- new_hp %>%
+      dplyr::left_join(gidp_df, by = 'player_id') %>%
+      dplyr::left_join(e_df, by = 'player_id') %>%
+      tibble::as.tibble()%>%
+      dplyr::select(player_id, player, team, year, pos, pos_list, 
+                    tidyselect::everything())
+    
+    # Combine
+    batprojs_df <- dplyr::bind_rows(new_hp, batprojs_df) %>%
+      structure(., class = c('projections', 'batting', 'tbl_df', 'tbl', 'data.frame')) %>%
+    dplyr::distinct(player_id, year, .keep_all = TRUE)
+   
+    # Save Object
+    usethis::use_data(batprojs_df, overwrite=TRUE)
+
+```
+
+Then pitching
+
+```{r, eval = FALSE}
+    
+  # Load Existing
+  data(pitchprojs_df)
+  pitchprojs_df <- pitchprojs_df %>% 
+    dplyr::filter(year != YEAR)
+
+  # Load New Projections
+  setwd('..')
+  new_pp <- read.csv(file.path(getwd(), 'data', 'raw', 'projections',
+                                  paste0('fp_pitchers_', YEAR, '.csv')))
+
+  # Prep Data
+  names(new_pp) <- tolower(names(new_pp))
+    new_pp <- new_pp %>%
+      dplyr::rename(pos = positions) %>%
+      dplyr::mutate(pos = gsub(',', '/', pos),
+                    pos = gsub('/', ' | ', pos),
+                    year = 2020,
+                    player = as.character(player),
+                    team = as.character(team)) %>%
+      dplyr::select(-c(hr))%>%
+      dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+      tidyr::unnest() %>%
+      dplyr::filter(pos_list != '|') %>%
+      tidyr::nest(pos_list, .key = 'pos_list') %>%
+      addPlayerID(., players_df = players_df) 
+    
+    qs_df <- projectQS(pitching_df, new_pp, proj_year = 2020)
+    holds_df <- projectHolds(pitching_df, new_pp, proj_year = 2020)
+    
+    new_pp <- new_pp %>%
+      dplyr::left_join(qs_df, by = 'player_id') %>%
+      dplyr::left_join(holds_df, by = 'player_id') %>%
+      tibble::as.tibble() %>%
+      dplyr::select(player_id, player, team, year, pos, pos_list, 
+                    tidyselect::everything())
+      
+    # Combine Al
+    pitchprojs_df <- dplyr::bind_rows(new_pp, pitchprojs_df) %>%
+      structure(., class = c('projections', 'pitching', 'tbl_df', 'tbl', 'data.frame')) %>%
+    dplyr::distinct(player_id, year, .keep_all = TRUE)
+
+    # Save Object
+    usethis::use_data(pitchprojs_df, overwrite=TRUE) 
+```
+
+### Rankings
+
+Same for the rankings, these are downloaded from Fantasy Pros. 
+
+```{r, eval = FALSE}
+    
+  ## Load Existing Data
+  data(rankings_df)
+  rankings_df <- rankings_df %>% 
+    dplyr::filter(year != YEAR)
+
+  ## Read in Data  
+  setwd('..') 
+  new_rank <- read.csv(file.path(getwd(), 'data', 'raw', 'rankings', 
+                                  paste0('fp_draftrankings_', YEAR, '.csv')))
+  
+  # 2020
+  names(new_rank) <- tolower(names(new_rank))
+  new_rank <- new_rank %>% 
+    dplyr::rename(pos = positions,
+                  ranking = rank,
+                  st_dev = std.dev) %>%
+    dplyr::mutate(pos = gsub(',', '/', pos),
+                  pos = gsub('/', ' | ', pos),
+                  year = YEAR,
+                  team = as.character(team),
+                  player = as.character(player),
+                  adp = as.numeric(adp),
+                  avg = as.numeric(avg)) %>%
+    tibble::as.tibble() %>%
+    dplyr::select(-c(vs..adp)) %>%
+    tibble::as.tibble() %>%
+    dplyr::mutate(pos_list = strsplit(pos, ' | ')) %>%
+    tidyr::unnest() %>%
+    dplyr::filter(pos_list != '|') %>%
+    tidyr::nest(pos_list, .key = 'pos_list') %>%
+    dplyr::select(player, team, pos, year, ranking, tidyselect::everything()) %>%
+    addPlayerID(., players_df) %>%
+    dplyr::select(player_id, player, year, team, pos, pos_list, ranking,
+                  tidyselect::everything())
+  
+  # ## TEMP
+  new_rank$adp[is.na(new_rank$adp)] <- ceiling(new_rank$avg[is.na(new_rank$adp)])
+  
+  # Combine All
+  rankings_df <- dplyr::bind_rows(new_rank, rankings_df) %>%
+    structure(., class = c('draftRankings', 'tbl_df', 'tbl', 'data.frame')) %>%
+    dplyr::distinct(player_id, year, .keep_all = TRUE)
+  
+  # Save Object
+  usethis::use_data(rankings_df, overwrite=TRUE) 
+  
+```
+
+### Past Seasons
+
+From our ESPN home page, download the results from the past season to a .csv file.  Be sure to the team number (gained from the URL on each manager's page.)
+
+```{r, eval = FALSE}
+
+  # load existing data  
+  data(seasons_, package = 'FBB30x30')
+
+  ## Read in New Data 
+  setwd('..')
+  new_seasons <- readr::read_delim(file.path(getwd(), 'data', 'raw', 'seasons', 
+                                             paste0('season', YEAR - 1, '.csv')),
+                                      delim = ';')
+  
+  # Pred Data
+  new_seasons <- new_seasons %>%
+    dplyr::select(team = Team, rank = Rank, r = R, hr = HR, rbi = RBI, so = K, sb = SB, 
+                  obp = OBP, slg = SLG, gidp = GIDP, e = E, ip = IP, qs = QS, k = K_1, 
+                  sv = SV, hd = HD, whip = WHIP, moves = Moves, starts = Starts) %>%
+    structure(., class = c('season', class(seasons_[['2015']])))
+  
+  # Add to list
+  seasons_[[YEAR-1]] <- new_seasons
+  
+  # Save object
+  usethis::use_data(seasons_, overwrite=TRUE) 
+
+```

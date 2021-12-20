@@ -3,7 +3,7 @@
   library(tidyverse)
 
   configs <- setConfigs(nbr_owners = 8,
-                        season_year = 2019,
+                        season_year = 2020,
                         rankings = c('rrv', rep('fp', 7)))
 
   
